@@ -1,6 +1,33 @@
-import React, { useState, useMemo, useEffect } from 'react';
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPO 打新助手</title>
+    <!-- 1. 引入 React 核心库 -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- 2. 引入 Babel（让浏览器认识 React 的语法） -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- 3. 引入 Tailwind CSS（排版与美化样式） -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- 网页挂载的容器 -->
+    <div id="root"></div>
 
-// Real-world accurate IPO data for July 2026 based on true market listings
+    <!-- 注意这里的 type 必须是 text/babel -->
+    <script type="text/text/babel">
+        // 声明 React 的常用工具
+        const { useState, useMemo, useEffect } = React;
+
+        // =========================================================
+        // 【请在下方粘贴你记事本里的代码，并做 2 处微调：】
+        // 1. 删掉你原本的第一行：import React, { ... } from 'react';
+        // 2. 将原本的 export default function App() 改为 function App()
+        // =========================================================
+
+        // Real-world accurate IPO data for July 2026 based on true market listings
 const INITIAL_IPO_DATA = [
   {
     id: 'a-1',
@@ -145,7 +172,7 @@ const STRATEGY_GUIDES = [
   }
 ];
 
-export default function App() {
+export function App() {
   const [activeTab, setActiveTab] = useState('optimizer'); // default to optimizer per request
   const [marketFilter, setMarketFilter] = useState('ALL'); // ALL, HK, A, US
   const [statusFilter, setStatusFilter] = useState('ALL'); // ALL, subscription, upcoming, listed
@@ -2126,3 +2153,18 @@ export default function App() {
     </div>
   );
 }
+
+
+
+        // =========================================================
+        // 【请在上方粘贴你的代码】
+        // =========================================================
+
+        // 最后一步：告诉网页把 App 组件渲染到 root 容器里
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
+
+
