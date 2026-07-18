@@ -2,11 +2,10 @@ name: 每日定时抓取IPO真实行情数据
 
 on:
   schedule:
-    # 🤖 核心配置：每天凌晨 2 点（北京时间上午 10 点）这台云端电脑自动开机抓取
+    # 每天凌晨 2 点（北京时间上午 10 点）自动触发
     - cron: '0 2 * * *'
-  workflow_dispatch: # 特权配置：允许你在 GitHub 网页上随时点按钮手动触发抓取
+  workflow_dispatch: # 允许手动点击触发
 
-# 🔑 升级核心：赋予这台云端虚拟电脑“写入仓库代码”的最高特权，彻底封死权限报错！
 permissions:
   contents: write
 
@@ -14,14 +13,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    # 🟢 核心升级：由 @v3 升级到最新的 @v4，彻底消除 Node.js 弃用警告
     - name: 1. 检查并载入仓库代码架构
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
+    # 🟢 核心升级：由 @v4 升级到最新的 @v5，完美适配最新云端环境
     - name: 2. 安装 Python 高精洗数环境
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.10'
 
+    # 🤖 关键执行步：如果这里还报 code 2，请务必检查你的仓库根目录下有没有 scraper.py
     - name: 3. 开机执行 scraper 脚本抓取接口
       run: python scraper.py
 
@@ -30,6 +32,5 @@ jobs:
         git config --global user.name "GitHub Action Scraper"
         git config --global user.email "actions@github.com"
         git add ipo_data.json
-        # 如果今天的数据和昨天一模一样，退出并不报错
         git commit -m "🤖 机器人：自动同步最新全网待上市股票行情指标" || echo "今天接口数据无变动"
         git push
