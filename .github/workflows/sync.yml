@@ -1,0 +1,30 @@
+name: 每日定时抓取IPO真实行情数据
+
+on:
+  schedule:
+    # 🤖 核心配置：每天凌晨 2 点（北京时间上午 10 点）这台云端电脑自动开机抓取
+    - cron: '0 2 * * *'
+  workflow_dispatch: # 特权配置：允许你在 GitHub 网页上随时点按钮手动触发抓取
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: 1. 检查并载入仓库代码架构
+      uses: actions/checkout@v3
+
+    - name: 2. 安装 Python 高精洗数环境
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: 3. 开机执行 scraper 脚本抓取接口
+      run: python scraper.py
+
+    - name: 4. 机器人自动打包数据并向你的仓库提交覆盖
+      run: |
+        git config --global user.name "GitHub Action Scraper"
+        git config --global user.email "actions@github.com"
+        git add ipo_data.json
+        git commit -m "🤖 机器人：自动同步最新全网待上市股票行情指标" || echo "今天接口数据无变动"
+        git push
