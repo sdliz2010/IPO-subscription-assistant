@@ -1,0 +1,32 @@
+[
+  {
+    "id": "live-1",
+    "name": "长鑫科技 (ChangXin)",
+    "ticker": "688825.SH",
+    "market": "A股科创板",
+    "industry": "半导体存储芯片",
+    "priceRange": "8.66 CNY",
+    "minEntry": "额度申购 (免本金)",
+    "status": "subscription",
+    "oversubscribed": 852.4,
+    "cornerstones": "大基金三期注资",
+    "sponsor": "中信证券, 中金公司",
+    "rating": "S",
+    "summary": "科创板历史级肉签！国内DRAM存储芯片绝对龙头，拟募资数百亿元，获大基金三期大力注资。发行定价极为克制。"
+  },
+  {
+    "id": "live-2",
+    "name": "托伦斯精密 (Toron)",
+    "ticker": "301583.SZ",
+    "market": "A股主板/创业板",
+    "industry": "半导体零部件",
+    "priceRange": "18.20 CNY",
+    "minEntry": "额度申购 (免本金)",
+    "status": "subscription",
+    "oversubscribed": 1450.0,
+    "cornerstones: ": "无公开基石",
+    "sponsor": "华泰联合证券",
+    "rating": "S",
+    "summary": "近期半导体精密零部件明星新股。上市首日爆发式飙升盘中涨幅超10倍，单签浮盈高达数万元。"
+  }
+]
