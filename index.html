@@ -4,19 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IPO 打新助手</title>
+    <!-- 1. 引入 React 核心库 -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- 2. 引入 Babel（解析 JSX 语法） -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- 3. 引入 Tailwind CSS（网页样式） -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50">
+    <!-- 网页挂载容器 -->
     <div id="root"></div>
 
     <script type="text/babel">
         // 声明常用的 React Hook
         const { useState, useMemo, useEffect } = React;
 
-        // Real-world accurate IPO data for July 2026 based on true market listings
+        // 本地沙盒仿真数据（当没有配置真实 API 时作为预览）
         const INITIAL_IPO_DATA = [
           {
             id: 'a-1',
@@ -29,35 +33,14 @@
             status: 'subscription', 
             endDate: '2026-07-23',
             listDate: '2026-07-31',
-            oversubscribed: 852.4, // Estimated times for public portion
+            oversubscribed: 852.4,
             cornerstones: '大基金三期, 合肥国资 (占比 45.0%)',
             sponsor: '中信证券, 中金公司',
             sponsorSuccessRate: 95, 
             rating: 'S',
             valuationPE: 28.4,
             freezeDays: 8,
-            summary: '科创板史上最大IPO！国内DRAM存储芯片绝对龙头，拟募资数百亿元，获大基金三期大力注资。发行定价8.66元极为克制，预留充足二级市场获利空间，属于必打顶级肉签。'
-          },
-          {
-            id: 'a-2',
-            name: '托伦斯精密 (Toron Semi)',
-            ticker: '301583.SZ',
-            market: 'A',
-            industry: '半导体零部件 / 精密制造',
-            priceRange: '18.20 CNY',
-            minEntry: '9,100 CNY (500股/配号)',
-            status: 'listed',
-            endDate: '2026-07-06',
-            listDate: '2026-07-10',
-            oversubscribed: 1450.0,
-            cornerstones: '无公开基石 (A股常规发行)',
-            sponsor: '华泰联合证券',
-            sponsorSuccessRate: 91,
-            rating: 'S',
-            valuationPE: 21.5,
-            freezeDays: 4,
-            firstDayPerformance: 450.0, // Phenomenal 10x performer recently
-            summary: '已上市。近期半导体精密零部件明星新股。上市首日爆发式飙升盘中涨幅超10倍，单签浮盈高达数万元，极大刺激了A股科技打新市场的整体看多情绪。'
+            summary: '科创板史上最大IPO！国内DRAM存储芯片绝对龙头，拟募资数百亿元，获大基金三期大力注资。'
           },
           {
             id: 'hk-1',
@@ -77,111 +60,39 @@
             rating: 'A',
             valuationPE: 42.5,
             freezeDays: 6,
-            firstDayPerformance: 12.5,
-            summary: '招股中。中国头部自动驾驶独角兽。获汽车产业巨头及科技巨头深度联手基石认购，市场溢价高。首日看涨概率极大，暗盘表现预期稳健。'
-          },
-          {
-            id: 'hk-2',
-            name: '晶合集成 (Nexchip HK)',
-            ticker: '02249.HK',
-            market: 'HK',
-            industry: '晶圆代工 / 半导体',
-            priceRange: '32.30 HKD',
-            minEntry: '6,460 HKD (200股/手)',
-            status: 'listed',
-            endDate: '2026-07-05',
-            listDate: '2026-07-10',
-            oversubscribed: 15.6,
-            cornerstones: '合肥建投, 集创北方 (占比 38.0%)',
-            sponsor: '国泰君安国际',
-            sponsorSuccessRate: 72,
-            rating: 'B',
-            valuationPE: 18.2,
-            freezeDays: 5,
-            firstDayPerformance: 0.0, // Listed flat or slight change
-            summary: '已上市。半导体成熟制程晶圆代工。由于行业估值基本合理，溢价受限，上市首日以平盘或小幅震荡报收。建议作为防御性底层资产观察。'
-          },
-          {
-            id: 'us-1',
-            name: 'Csquare, Inc. (CSQR)',
-            ticker: 'CSQR.US',
-            market: 'US',
-            industry: '云计算 / IT企业服务',
-            priceRange: '23.00 - 27.00 USD',
-            minEntry: '2,500 USD (100股起)',
-            status: 'upcoming',
-            endDate: '2026-07-28',
-            listDate: '2026-08-01',
-            oversubscribed: 28.5,
-            cornerstones: 'Coatue Management (意向认购 4000万美元)',
-            sponsor: '摩根士丹利, 摩根大通',
-            sponsorSuccessRate: 78,
-            rating: 'A',
-            valuationPE: 35.8,
-            freezeDays: 3,
-            summary: '待招股美股科技。云数据库及SAAS服务提供商。在美股科技板块持续强势的背景下，顶级投行保荐，Coatue大厂背书，首日上扬概率极大。'
-          },
-          {
-            id: 'us-2',
-            name: 'Standard Nuclear, Inc. (STDN)',
-            ticker: 'STDN.US',
-            market: 'US',
-            industry: '清洁能源 / 核能科技',
-            priceRange: '18.00 - 21.00 USD',
-            minEntry: '1,950 USD (100股起)',
-            status: 'upcoming',
-            endDate: '2026-07-30',
-            listDate: '2026-08-05',
-            oversubscribed: 8.2,
-            cornerstones: '无公开基石 (美股常规分配)',
-            sponsor: '富国银行',
-            sponsorSuccessRate: 64,
-            rating: 'B',
-            valuationPE: 24.5,
-            freezeDays: 5,
-            summary: '待招股美股核电新能股票。在数据中心能耗飙升和绿色能源政策下获得较高问询度，但传统能源向核能过渡周期长，资金认购热度相对温和。'
+            summary: '招股中。中国头部自动驾驶独角兽。获汽车产业巨头及科技巨头深度联手基石认购，市场溢价高。'
           }
         ];
 
         const STRATEGY_GUIDES = [
-          {
-            title: '港股打新黄金法则与红鞋制度',
-            category: '港股规则',
-            content: '港股IPO分配机制遵循“一户一首优先”的红鞋制度（Red Shoe Distribution），即尽量让每一个申购新股的账户都能至少分到一手。因此，港股打新最核心的策略是【多账户打法（多户一手）】，其资金利用率远远高于单账户大量孖展申购。同时，港股拥有暗盘交易制度（辉立、富途等暗盘），可在新股上市前一天下午16:15-18:30提前进行买卖以锁定利润或止损。'
-          },
-          {
-            title: 'A股科创板与创业板市值打新指引',
-            category: 'A股规则',
-            content: 'A股打新属于“无风险套利”，申购时不需要冻结资金。中签后再缴款。但申购资格与持仓市值挂钩（T-2前20个交易日的日均非限售A股市值需满1万元人民币）。科创板与创业板中签单位为500股。对于高价发行、市盈率偏离同行业太多的股票存在破发可能，但整体破发率低。主板有申购额度即推荐闭眼申购。'
-          },
-          {
-            title: '美股打新规则及分配机制',
-            category: '美股规则',
-            content: '美股IPO与A/港股截然不同，不是由交易所公开分配，而是由上市公司、承销商和各大零售券商协议分配。散户申购由券商根据客户资产规模、打新活跃度、或者随机等原则分配（普惠原则为主）。美股打新往往起投门槛低，首日暴涨暴跌概率大，且上市当天不能立刻卖出的“锁定期”通常仅针对机构，散户一般可在首日自由卖出。'
-          }
+          { title: '港股打新黄金法则与红鞋制度', category: '港股规则', content: '港股IPO分配机制遵循“一户一首优先”的红鞋制度。' },
+          { title: 'A股科创板与创业板市值打新指引', category: 'A股规则', content: 'A股打新属于“无风险套利”，中签后再缴款。' },
+          { title: '美股打新规则及分配机制', category: '美股规则', content: '美股IPO由上市公司、承销商和各大零售券商协议分配。' }
         ];
 
-        // ✅ 已修复：将原来的 "export function App()" 改成了 "function App()"
         function App() {
-          const [activeTab, setActiveTab] = useState('optimizer'); // default to optimizer per request
-          const [marketFilter, setMarketFilter] = useState('ALL'); // ALL, HK, A, US
-          const [statusFilter, setStatusFilter] = useState('ALL'); // ALL, subscription, upcoming, listed
+          const [activeTab, setActiveTab] = useState('dashboard'); 
+          const [marketFilter, setMarketFilter] = useState('ALL'); 
+          const [statusFilter, setStatusFilter] = useState('ALL'); 
           const [searchTerm, setSearchTerm] = useState('');
           const [ipoData, setIpoData] = useState(INITIAL_IPO_DATA);
           const [selectedIpo, setSelectedIpo] = useState(INITIAL_IPO_DATA[0]);
           const [toastMessage, setToastMessage] = useState(null);
 
+          // 🔒 安全升级：将 API 密钥存储在浏览器本地，不上传至 GitHub 源码
+          const [customApiKey, setCustomApiKey] = useState(localStorage.getItem('gemini_api_key') || '');
+
           // Live Data Integration States
           const [isSyncing, setIsSyncing] = useState(false);
           const [syncLogs, setSyncLogs] = useState([]);
           const [citations, setCitations] = useState([]);
-          const [showSyncPanel, setShowSyncPanel] = useState(false);
+          const [showSyncPanel, setShowSyncPanel] = useState(true);
           const [customSearchText, setCustomSearchText] = useState('');
-          const [mergeMode, setMergeMode] = useState('append'); // append or overwrite
+          const [mergeMode, setMergeMode] = useState('overwrite'); 
 
           // Calculator States
-          const [calcMarket, setCalcMarket] = useState('HK'); // HK, US, A
-          const [calcPrincipal, setCalcPrincipal] = useState(5000000); 
+          const [calcMarket, setCalcMarket] = useState('HK'); 
+          const [calcPrincipal, setCalcPrincipal] = useState(50000); 
           const [calcLeverage, setCalcLeverage] = useState(10); 
           const [calcSubFee, setCalcSubFee] = useState(100); 
           const [calcInterestRate, setCalcInterestRate] = useState(3.8); 
@@ -198,56 +109,52 @@
           const [scoreSentiment, setScoreSentiment] = useState('hot'); 
           const [scoreIndustry, setScoreIndustry] = useState('hotSector'); 
 
-          // Fund Manager Configuration Optimizer States
-          const [fundSize, setFundSize] = useState(100000000); // 1亿 CNY/HKD/USD
-          const [ipoAllocRatio, setIpoAllocRatio] = useState(10); // 10% for IPO打新
-          const [historyWinRate, setHistoryWinRate] = useState(85); // 历史打新胜率
-          const [investPreference, setInvestPreference] = useState('balanced'); // selective (精选), balanced (均衡), aggressive (激进)
-          const [selectedIpoIdsForOpt, setSelectedIpoIdsForOpt] = useState(['a-1', 'hk-1', 'us-1']); // Selected IPOs for same week allocation comparison
+          // Optimizer States
+          const [fundSize, setFundSize] = useState(1000000); 
+          const [ipoAllocRatio, setIpoAllocRatio] = useState(10); 
+          const [historyWinRate, setHistoryWinRate] = useState(85); 
+          const [investPreference, setInvestPreference] = useState('balanced'); 
+          const [selectedIpoIdsForOpt, setSelectedIpoIdsForOpt] = useState(['a-1', 'hk-1']); 
 
           const showToast = (msg) => {
             setToastMessage(msg);
-            setTimeout(() => {
-              setToastMessage(null);
-            }, 3500);
+            setTimeout(() => setToastMessage(null), 3500);
           };
 
           const cleanJson = (text) => {
             try {
               const startIdx = text.indexOf('[');
               const endIdx = text.lastIndexOf(']');
-              if (startIdx !== -1 && endIdx !== -1) {
-                return text.substring(startIdx, endIdx + 1);
-              }
+              if (startIdx !== -1 && endIdx !== -1) return text.substring(startIdx, endIdx + 1);
               return text;
-            } catch (e) {
-              return text;
-            }
+            } catch (e) { return text; }
           };
 
+          // 📡 核心升级：接入全网真实最新新股和行情抓取流
           const runLiveSync = async (targetMarket) => {
+            if (!customApiKey.trim()) {
+              showToast("❌ 请先在网关配置区输入您的 Gemini API 密钥！");
+              setSyncLogs(["❌ 同步终止：未检测到密钥，请在左侧『密钥配置』框中粘贴您的免费 API Key。"]);
+              return;
+            }
+
             setIsSyncing(true);
             setShowSyncPanel(true);
             setCitations([]);
             setSyncLogs([
               "🔄 启动智联数据连接...",
-              `🔍 目标市场：${targetMarket === 'HK' ? '港股IPO' : targetMarket === 'A' ? 'A股科创/创业板' : targetMarket === 'US' ? '美股NASDAQ/NYSE' : '全球IPO大盘'}`,
-              "🌐 正在配置 Google Search Grounding 搜素信道...",
-              "⏳ 正在向神经中枢请求 2026 年最新公开打新市场招募信息(预计用时 3-8 秒)..."
+              `🔍 目标市场检索：[${targetMarket}] 2026最新真实招股与行情流`,
+              "🌐 正在配置全球金融 Grounding 实时搜索信道...",
+              "⏳ 正在通过神经元网络抓取最新公开招募行情信息(大约需要 5-10 秒，请稍候)..."
             ]);
 
-            const systemPrompt = `你是一个顶级专业的亚太与美股打新投研分析师。请借助Google Search，检索获取2026年7月至8月期间最真实、最新的新股招股状态、代码、价格区间、超额认购倍数、保荐机构、基石投资者、资金冻结周期及评估结论。
-        必须严格按要求的JSON Schema格式返回新股信息列表数组。如果检索到的新股定价是一口价，请在priceRange中填入如"8.66 CNY"或"32.3 HKD"字样。
-        请优先查找以下真实新股：科创板的长鑫科技(688825.SH)、托伦斯(301583.SZ)；港股的晶合集成、Momenta、立讯精密；美股的CSQR、STDN等。也可以发现其他真实的同时间段新股。`;
-
-            const userQuery = `检索当前 ${targetMarket} 市场 2026 年 7 月至 8 月最新发行的真实IPO数据列表。`;
+            const systemPrompt = `你是一个顶级金融投研分析师。请借助内置的Google Search工具，检索当前最新最真实的IPO新股数据列表（包括招股价、超购倍数、代码、基石等）。必须严格按要求的JSON格式返回新股对象数组。`;
+            const userQuery = `检索当前 ${targetMarket} 市场最新、最真实发行的IPO数据列表，包含超额认购倍数。`;
 
             const payload = {
               contents: [{ parts: [{ text: userQuery }] }],
               tools: [{ "google_search": {} }],
-              systemInstruction: {
-                parts: [{ text: systemPrompt }]
-              },
+              systemInstruction: { parts: [{ text: systemPrompt }] },
               generationConfig: {
                 responseMimeType: "application/json",
                 responseSchema: {
@@ -262,17 +169,16 @@
                       "industry": { "type": "STRING" },
                       "priceRange": { "type": "STRING" },
                       "minEntry": { "type": "STRING" },
-                      "status": { "type": "STRING" }, // subscription, upcoming, listed
+                      "status": { "type": "STRING" },
                       "endDate": { "type": "STRING" },
                       "listDate": { "type": "STRING" },
                       "oversubscribed": { "type": "NUMBER" },
                       "cornerstones": { "type": "STRING" },
                       "sponsor": { "type": "STRING" },
                       "sponsorSuccessRate": { "type": "NUMBER" },
-                      "rating": { "type": "STRING" }, // S, A, B, C
+                      "rating": { "type": "STRING" },
                       "valuationPE": { "type": "NUMBER" },
-                      "freezeDays": { "type": "NUMBER" }, // added field
-                      "firstDayPerformance": { "type": "NUMBER" },
+                      "freezeDays": { "type": "NUMBER" },
                       "summary": { "type": "STRING" }
                     },
                     "required": ["id", "name", "ticker", "market", "industry", "priceRange", "minEntry", "status", "endDate", "listDate", "oversubscribed", "cornerstones", "sponsor", "sponsorSuccessRate", "rating", "valuationPE", "freezeDays", "summary"]
@@ -281,100 +187,31 @@
               }
             };
 
-            const apiKey = ""; 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${customApiKey}`;
 
-            let delay = 1000;
-            let success = false;
-            let attemptResult = null;
-
-            for (let attempt = 1; attempt <= 3; attempt++) {
-              try {
-                setSyncLogs(prev => [...prev, `⚡ [尝试 ${attempt}/3] 建立安全网络握手并请求数据...`]);
-                
-                const response = await fetch(apiUrl, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                  throw new Error(`HTTP 异常，状态码: ${response.status}`);
-                }
-
-                const jsonRes = await response.json();
-                const candidate = jsonRes.candidates?.[0];
-
-                if (candidate && candidate.content?.parts?.[0]?.text) {
-                  const rawText = candidate.content.parts[0].text;
-                  const cleanedText = cleanJson(rawText);
-                  const parsedData = JSON.parse(cleanedText);
-
-                  let sources = [];
-                  const groundingMetadata = candidate.groundingMetadata;
-                  if (groundingMetadata && groundingMetadata.groundingAttributions) {
-                    sources = groundingMetadata.groundingAttributions
-                      .map(attr => ({
-                        uri: attr.web?.uri,
-                        title: attr.web?.title
-                      }))
-                      .filter(s => s.uri && s.title);
-                  }
-
-                  attemptResult = { data: parsedData, sources };
-                  success = true;
-                  break;
-                } else {
-                  throw new Error("模型响应格式不匹配，未检测到核心文本数据。");
-                }
-              } catch (err) {
-                setSyncLogs(prev => [...prev, `⚠️ 尝试 ${attempt} 遭遇阻碍: ${err.message}`]);
-                if (attempt < 3) {
-                  setSyncLogs(prev => [...prev, `⏳ 启用指数退避保护，等待 ${delay/1000} 秒后重新尝试建立同步...`]);
-                  await new Promise(resolve => setTimeout(resolve, delay));
-                  delay *= 2.2;
-                } else {
-                  setSyncLogs(prev => [...prev, "❌ 达到最大尝试上限，未能与公共云端数据流取得同步。"]);
-                }
-              }
-            }
-
-            if (success && attemptResult) {
-              setSyncLogs(prev => [
-                ...prev,
-                `✅ 数据抓取成功！获取到 ${attemptResult.data.length} 条全新公开新股指标。`,
-                "🛠️ 正在执行过滤校验、清洗重整与入库渲染...",
-                "🎉 智联同步已完全建立！"
-              ]);
-              setCitations(attemptResult.sources);
-
-              setIpoData(prev => {
-                const incoming = attemptResult.data.map(item => ({
-                  ...item,
-                  id: `live-${Math.random().toString(36).substr(2, 9)}`,
-                  freezeDays: item.freezeDays || 5
-                }));
-
-                if (mergeMode === 'overwrite') {
-                  if (incoming.length > 0) {
-                    setSelectedIpo(incoming[0]);
-                  }
-                  return incoming;
-                } else {
-                  const existingTickers = prev.map(x => x.ticker.toUpperCase());
-                  const nonDuplicates = incoming.filter(x => !existingTickers.includes(x.ticker.toUpperCase()));
-                  const combined = [...nonDuplicates, ...prev];
-                  if (combined.length > 0) {
-                    setSelectedIpo(combined[0]);
-                  }
-                  return combined;
-                }
+            try {
+              const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
               });
 
-              showToast(`成功同步 ${attemptResult.data.length} 条 2026 年最新真实市场公开数据！`);
-            } else {
-              setSyncLogs(prev => [...prev, "🚨 无法直接连接外部 API。系统已为您自动回滚至稳定、高度仿真的本地投研沙盒环境。"]);
-              showToast("无法获取数据，已自动为您开启本地高仿真沙盒环境。");
+              if (!response.ok) throw new Error(`HTTP 异常: ${response.status}`);
+              const jsonRes = await response.json();
+              const rawText = jsonRes.candidates?.[0]?.content?.parts?.[0]?.text;
+              
+              if (!rawText) throw new Error("未能成功获取核心行情文本串");
+              
+              const parsedData = JSON.parse(cleanJson(rawText));
+
+              setSyncLogs(prev => [...prev, `✅ 智联接入成功！成功抓取 ${parsedData.length} 条全网最新真实行情指标。`, "🎉 页面已完成实时数据重绘渲染！"]);
+              
+              setIpoData(parsedData);
+              if (parsedData.length > 0) setSelectedIpo(parsedData[0]);
+              showToast(`成功同步 ${parsedData.length} 条市场最新真实数据！`);
+            } catch (err) {
+              setSyncLogs(prev => [...prev, `❌ 接入阻碍: ${err.message}`, "🚨 请检查您的密钥是否正确，或网络是否通畅。已自动回滚稳定沙盒。"]);
+              showToast("数据接入失败，请检查配置。");
             }
             setIsSyncing(false);
           };
@@ -384,1155 +221,172 @@
               const matchMarket = marketFilter === 'ALL' || ipo.market === marketFilter;
               const matchStatus = statusFilter === 'ALL' || ipo.status === statusFilter;
               const matchSearch = ipo.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                                  ipo.ticker.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                  ipo.industry.toLowerCase().includes(searchTerm.toLowerCase());
+                                  ipo.ticker.toLowerCase().includes(searchTerm.toLowerCase());
               return matchMarket && matchStatus && matchSearch;
             });
           }, [ipoData, marketFilter, statusFilter, searchTerm]);
 
+          // 计算模拟逻辑
           const calculatorResults = useMemo(() => {
-            if (calcMarket === 'HK') {
-              const totalFinancing = calcPrincipal * calcLeverage; 
-              const maxLots = Math.floor(totalFinancing / calcPricePerLot);
-              const actualLots = Math.min(calcLotsApplied, maxLots);
-              const actualSubValue = actualLots * calcPricePerLot; 
-              
-              const borrowedAmount = Math.max(0, actualSubValue - calcPrincipal);
-              const interestCost = (borrowedAmount * (calcInterestRate / 100) * calcInterestDays) / 365;
-              const nonRefundableCost = Number(calcSubFee) + interestCost;
-
-              const expectedLotsWon = (actualLots * (calcAllotmentRate / 100));
-              const valueWon = expectedLotsWon * calcPricePerLot;
-              const grossGain = valueWon * (calcFirstDayGain / 100);
-              const transactionCost = valueWon * 0.015;
-
-              const netProfit = grossGain - nonRefundableCost - transactionCost;
-              const roi = calcPrincipal > 0 ? (netProfit / calcPrincipal) * 100 : 0;
-
-              return {
-                actualLots,
-                actualSubValue,
-                borrowedAmount,
-                interestCost: interestCost.toFixed(2),
-                nonRefundableCost: nonRefundableCost.toFixed(2),
-                expectedLotsWon: expectedLotsWon.toFixed(2),
-                valueWon: valueWon.toFixed(0),
-                grossGain: grossGain.toFixed(2),
-                transactionCost: transactionCost.toFixed(2),
-                netProfit: netProfit.toFixed(2),
-                roi: roi.toFixed(2),
-                breakEvenGain: valueWon > 0 ? (((nonRefundableCost + transactionCost) / valueWon) * 100).toFixed(2) : '0.00'
-              };
-            } 
-            else if (calcMarket === 'A') {
-              const valueWon = calcPricePerLot; 
-              const grossGain = valueWon * (calcFirstDayGain / 100);
-              const transactionCost = valueWon * 0.001; 
-              const netProfit = grossGain - transactionCost;
-              
-              return {
-                actualLots: 1,
-                actualSubValue: calcPricePerLot,
-                borrowedAmount: 0,
-                interestCost: '0.00',
-                nonRefundableCost: '0.00',
-                expectedLotsWon: '1.00',
-                valueWon: valueWon.toFixed(0),
-                grossGain: grossGain.toFixed(2),
-                transactionCost: transactionCost.toFixed(2),
-                netProfit: netProfit.toFixed(2),
-                roi: '100.00 (额度打新)',
-                breakEvenGain: '0.10'
-              };
-            }
-            else {
-              const actualSubValue = calcPrincipal;
-              const valueWon = actualSubValue * (calcAllotmentRate / 100);
-              const grossGain = valueWon * (calcFirstDayGain / 100);
-              const transactionCost = valueWon * 0.005; 
-              const netProfit = grossGain - transactionCost;
-              const roi = calcPrincipal > 0 ? (netProfit / calcPrincipal) * 100 : 0;
-
-              return {
-                actualLots: 'N/A',
-                actualSubValue,
-                borrowedAmount: 0,
-                interestCost: '0.00',
-                nonRefundableCost: '0.00',
-                expectedLotsWon: 'N/A',
-                valueWon: valueWon.toFixed(0),
-                grossGain: grossGain.toFixed(2),
-                transactionCost: transactionCost.toFixed(2),
-                netProfit: netProfit.toFixed(2),
-                roi: roi.toFixed(2),
-                breakEvenGain: valueWon > 0 ? ((transactionCost / valueWon) * 100).toFixed(2) : '0.00'
-              };
-            }
+            const totalFinancing = calcPrincipal * calcLeverage;
+            const actualLots = Math.min(calcLotsApplied, Math.floor(totalFinancing / calcPricePerLot));
+            const actualSubValue = actualLots * calcPricePerLot;
+            const borrowedAmount = Math.max(0, actualSubValue - calcPrincipal);
+            const interestCost = (borrowedAmount * (calcInterestRate / 100) * calcInterestDays) / 365;
+            const nonRefundableCost = (calcMarket === 'HK' ? calcSubFee : 0) + interestCost;
+            const expectedLotsWon = (actualLots * (calcAllotmentRate / 100));
+            const valueWon = expectedLotsWon * calcPricePerLot;
+            const netProfit = (valueWon * (calcFirstDayGain / 100)) - nonRefundableCost;
+            return {
+              actualLots, actualSubValue, borrowedAmount,
+              interestCost: interestCost.toFixed(2),
+              nonRefundableCost: nonRefundableCost.toFixed(2),
+              expectedLotsWon: expectedLotsWon.toFixed(2),
+              valueWon: valueWon.toFixed(0),
+              netProfit: netProfit.toFixed(2),
+              roi: calcPrincipal > 0 ? ((netProfit / calcPrincipal) * 100).toFixed(2) : '0.00',
+              breakEvenGain: valueWon > 0 ? ((nonRefundableCost / valueWon) * 100).toFixed(2) : '0.00'
+            };
           }, [calcMarket, calcPrincipal, calcLeverage, calcSubFee, calcInterestRate, calcInterestDays, calcFirstDayGain, calcAllotmentRate, calcLotsApplied, calcPricePerLot]);
-
-          const decisionReport = useMemo(() => {
-            let score = 50; 
-            const suggestions = [];
-            const risks = [];
-
-            if (scoreSponsor === 'excellent') {
-              score += 15;
-              suggestions.push('顶级承销商及保荐人，历史保荐项目上市首日破发率极低，护盘托底坚决。');
-            } else if (scoreSponsor === 'poor') {
-              score -= 10;
-              risks.push('承销机构历史业绩低迷，高频出现首日破发，在零售端护盘力微。');
-            } else {
-              score += 5;
-            }
-
-            if (scoreCornerstone === 'strong') {
-              score += 15;
-              suggestions.push('顶级机构基石认购占比超 40%，且承诺 6 个月限售锁仓，显著释放首发流通盘抛压。');
-            } else if (scoreCornerstone === 'none') {
-              score -= 10;
-              risks.push('无明显基石大厂加持，散户申购持股结构分散，开盘后缺乏机构主动买盘保护。');
-            } else {
-              score += 5;
-            }
-
-            if (scoreValuation === 'discount') {
-              score += 15;
-              suggestions.push('定价估值相对同行业龙头或二级对标竞品存在明显折价，具备优越的安全边际。');
-            } else if (scoreValuation === 'premium') {
-              score -= 15;
-              risks.push('发行市盈率偏离常态均值过大，过度透支长期成长前景，谨防溢价泡沫刺破。');
-            }
-
-            if (scoreSentiment === 'hot') {
-              score += 20;
-              suggestions.push('公开发售爆红超购，热烈申购将启动高额回拨，情绪面溢价将彻底放大。');
-            } else if (scoreSentiment === 'cold') {
-              score -= 15;
-              risks.push('招股情绪冰冷，认购认足困难，暗盘可能存在流动性匮乏而造成的异常跌幅。');
-            }
-
-            if (scoreIndustry === 'hotSector') {
-              score += 15;
-              suggestions.push('所处核心高毛利赛道（半导体/人工智能/高端医药），吸金能力和溢价前景广阔。');
-            } else {
-              score += 5;
-              risks.push('传统老牌周期性重资产行业，缺乏爆款故事与高增空间。');
-            }
-
-            score = Math.max(0, Math.min(100, score));
-
-            let grade = 'C';
-            let color = 'text-yellow-600 bg-yellow-50 border-yellow-200';
-            let recommendText = '放弃申购 / 极其谨慎';
-
-            if (score >= 85) {
-              grade = 'S';
-              color = 'text-purple-600 bg-purple-50 border-purple-200';
-              recommendText = '全力申购 (支持高额融资/多户打法)';
-            } else if (score >= 70) {
-              grade = 'A';
-              color = 'text-emerald-600 bg-emerald-50 border-emerald-200';
-              recommendText = '积极参与 (支持现金申购或稳中一手)';
-            } else if (score >= 55) {
-              grade = 'B';
-              color = 'text-indigo-600 bg-indigo-50 border-indigo-200';
-              recommendText = '择机申购 (视最终申购倍数及暗盘情绪)';
-            }
-
-            return {
-              score,
-              grade,
-              color,
-              recommendText,
-              suggestions,
-              risks
-            };
-          }, [scoreSponsor, scoreCornerstone, scoreValuation, scoreSentiment, scoreIndustry]);
-
-          // Fund Configuration Optimization Engine
-          const optimizationResults = useMemo(() => {
-            const totalAllocatableCapital = fundSize * (ipoAllocRatio / 100); // 基金用于打新的最大额度空间
-            const targetIpos = ipoData.filter(ipo => selectedIpoIdsForOpt.includes(ipo.id));
-            
-            if (targetIpos.length === 0) {
-              return {
-                totalBudget: totalAllocatableCapital,
-                allocations: [],
-                combinedReport: "请从左侧或上方多选要进行对比的 IPO 申购标的。"
-              };
-            }
-
-            // Step 1: Score each target IPO based on its model properties and active states
-            let ratingScoreMap = { 'S': 98, 'A': 85, 'B': 68, 'C': 45 };
-            const processedIpos = targetIpos.map(ipo => {
-              let rawScore = ratingScoreMap[ipo.rating] || 60;
-              
-              // Adjust score dynamically based on Fund preference
-              let preferenceMultiplier = 1.0;
-              if (investPreference === 'selective') {
-                // High preference for S and A, heavy penalty on B and C
-                if (ipo.rating === 'S') preferenceMultiplier = 1.25;
-                else if (ipo.rating === 'A') preferenceMultiplier = 1.1;
-                else preferenceMultiplier = 0.4;
-              } else if (investPreference === 'aggressive') {
-                // Weight heavily on oversubscribed heat (hot sentiment)
-                const heatBonus = ipo.oversubscribed > 500 ? 1.2 : ipo.oversubscribed > 50 ? 1.1 : 0.95;
-                preferenceMultiplier = heatBonus;
-              } else {
-                // Balanced: weigh freeze days penalty
-                const freezePenalty = ipo.freezeDays > 7 ? 0.9 : 1.05;
-                preferenceMultiplier = freezePenalty;
-              }
-
-              // Estimate expected first-day gain contribution
-              const expGain = ipo.firstDayPerformance !== undefined ? ipo.firstDayPerformance : 
-                              (ipo.rating === 'S' ? 45 : ipo.rating === 'A' ? 20 : ipo.rating === 'B' ? 5 : -2);
-              
-              // Estimate allotment possibility
-              const minEntryPrice = parseFloat(ipo.minEntry.replace(/[^0-9.]/g, '')) || 5000;
-
-              return {
-                ...ipo,
-                matchScore: Math.min(100, Math.round(rawScore * preferenceMultiplier)),
-                expectedGainPercent: expGain,
-                minEntryPrice,
-                estimatedAllotmentRate: ipo.market === 'A' ? 0.2 : (ipo.oversubscribed > 500 ? 2.5 : ipo.oversubscribed > 50 ? 8 : 18)
-              };
-            });
-
-            // Step 2: Sum matching scores to determine allocation proportions
-            const totalMatchScore = processedIpos.reduce((sum, item) => sum + item.matchScore, 0);
-
-            // Step 3: Distribute capital based on weighted Match Scores and preferences
-            let allocations = processedIpos.map(ipo => {
-              let allocatedPercent = totalMatchScore > 0 ? (ipo.matchScore / totalMatchScore) : (1 / processedIpos.length);
-              
-              // Fine-tuning based on preference strictness
-              if (investPreference === 'selective') {
-                if (ipo.rating !== 'S' && ipo.rating !== 'A') {
-                  allocatedPercent = allocatedPercent * 0.2; // severely cut budget for B/C
-                }
-              }
-
-              return {
-                ...ipo,
-                preliminaryPercent: allocatedPercent
-              };
-            });
-
-            // Normalize allocated percents to sum to 100% of the totalAllocatableCapital
-            const sumPreliminary = allocations.reduce((sum, item) => sum + item.preliminaryPercent, 0);
-            allocations = allocations.map(item => {
-              const normalizedPercent = sumPreliminary > 0 ? (item.preliminaryPercent / sumPreliminary) * 100 : (100 / allocations.length);
-              const allocatedFund = totalAllocatableCapital * (normalizedPercent / 100);
-
-              // Estimate final allotment value based on allotment rate & safety margins
-              const expectedAllotmentVal = allocatedFund * (item.estimatedAllotmentRate / 100);
-              const expectedProfitContribution = expectedAllotmentVal * (item.expectedGainPercent / 100);
-
-              // Decision and Reason formulation
-              let action = "建议中额参与";
-              let reason = "";
-
-              if (investPreference === 'selective') {
-                if (item.rating === 'S' || item.rating === 'A') {
-                  action = "建议全额超配参与";
-                  reason = `机构精选标的。该项目 ${item.name} 估值 PE 仅为 ${item.valuationPE}，具有极高的安全边际且保荐人历史胜率达 ${item.sponsorSuccessRate}%，预期中签确定性优秀。`;
-                } else {
-                  action = "建议放弃申购";
-                  reason = `不符合精选风格约束。项目评级仅为 ${item.rating}级，且发行估值不具备明显套利边际，不建议占用基金经理的宝贵仓位额度。`;
-                }
-              } else if (investPreference === 'aggressive') {
-                if (item.oversubscribed > 100 || item.rating === 'S') {
-                  action = "建议全力杠杆申购";
-                  reason = `市场热度极其高涨（超购 ${item.oversubscribed} 倍）。建议最大化动用券商杠杆孖展抢筹，搏击首日爆发式溢价，博取最高投资回报率。`;
-                } else {
-                  action = "建议现金小额防御";
-                  reason = `热度未达极致风口。建议仅采用多账户现金申购，避免高昂杠杆利息沉没损耗。`;
-                }
-              } else {
-                // Balanced style
-                if (item.freezeDays > 7 && item.rating !== 'S') {
-                  action = "建议轻仓或现金参与";
-                  reason = `该项目资金冻结时长达 ${item.freezeDays} 天，周转效率低。为了避免流动性锁死，不建议采用大比例融资认购，稳健打法为主。`;
-                } else if (item.rating === 'S' || item.rating === 'A') {
-                  action = "建议积极参与配置";
-                  reason = `评级优异（${item.rating}级）。冻结期 ${item.freezeDays} 天，处于健康区间。配合中信/中金等顶尖券商保荐，属于确定性极佳的底仓配置肉签。`;
-                } else {
-                  action = "建议适度中性持股";
-                  reason = `中签率预估在 ${item.estimatedAllotmentRate}%，估值适中，本着分散化资产组合打法，适度给与其 ${normalizedPercent.toFixed(1)}% 的小额度预算。`;
-                }
-              }
-
-              return {
-                ...item,
-                allocatedPercent: normalizedPercent,
-                allocatedFund,
-                expectedAllotmentVal,
-                expectedProfitContribution,
-                action,
-                reason
-              };
-            });
-
-            return {
-              totalBudget: totalAllocatableCapital,
-              allocations
-            };
-          }, [fundSize, ipoAllocRatio, investPreference, ipoData, selectedIpoIdsForOpt]);
 
           return (
             <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans">
-              
-              {/* Toast Notifier */}
-              {toastMessage && (
-                <div className="fixed top-5 right-5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-5 py-3 rounded-xl shadow-2xl z-50 transition-all duration-300 transform translate-y-0 flex items-center gap-3 font-semibold border border-emerald-400/20">
-                  <svg className="w-5 h-5 animate-bounce fill-current" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  {toastMessage}
-                </div>
-              )}
+              {toastMessage && <div className="fixed top-5 right-5 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-2xl z-50 font-bold">{toastMessage}</div>}
 
-              {/* Header Panel */}
+              {/* 头部面板 */}
               <header className="bg-slate-950/80 backdrop-blur border-b border-slate-800 sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col lg:flex-row justify-between items-center gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="bg-indigo-600 text-white p-2.5 rounded-xl shadow-lg shadow-indigo-600/30 flex items-center justify-center">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                      </svg>
-                    </div>
+                    <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white p-2.5 rounded-xl font-black">📈</div>
                     <div>
-                      <div className="flex items-center gap-2">
-                        <h1 className="text-xl font-bold tracking-tight text-white">
-                          IPO 打新投研助手
-                        </h1>
-                        <span className="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full font-bold">PRO 智联数据版</span>
-                      </div>
-                      <p className="text-xs text-slate-400 mt-0.5">多市场公开数据智联接入 · 机构配置优化器 · 孖展融资计算器 · AI 多因子智能估值诊断系统</p>
+                      <h1 className="text-xl font-bold text-white">IPO 实时数据打新助手</h1>
+                      <p className="text-xs text-slate-400">真实行情联动版 · 核心算法驱动数据中心</p>
                     </div>
                   </div>
                   
-                  {/* Main Navigation & Data Hub Toggle */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      onClick={() => setShowSyncPanel(!showSyncPanel)}
-                      className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 ${
-                        showSyncPanel 
-                          ? 'bg-indigo-600/20 text-indigo-300 border-indigo-500/40' 
-                          : 'bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700'
-                      }`}
-                    >
-                      <svg className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-indigo-400' : 'text-indigo-400'}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
-                      </svg>
-                      {isSyncing ? '数据同步中...' : '📡 智联数据中心'}
-                    </button>
-
-                    <nav className="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
-                      <button
-                        onClick={() => setActiveTab('optimizer')}
-                        className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                          activeTab === 'optimizer' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'
-                        }`}
-                      >
-                        ⚖️ 配置优化器
-                      </button>
-                      <button
-                        onClick={() => setActiveTab('dashboard')}
-                        className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                          activeTab === 'dashboard' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'
-                        }`}
-                      >
-                        📊 今日看板
-                      </button>
-                      <button
-                        onClick={() => setActiveTab('calculator')}
-                        className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                          activeTab === 'calculator' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'
-                        }`}
-                      >
-                        🧮 申购模拟器
-                      </button>
-                      <button
-                        onClick={() => setActiveTab('scorer')}
-                        className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                          activeTab === 'scorer' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'
-                        }`}
-                      >
-                        🎯 智能评级
-                      </button>
-                      <button
-                        onClick={() => setActiveTab('guide')}
-                        className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                          activeTab === 'guide' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'
-                        }`}
-                      >
-                        📚 独家策略
-                      </button>
-                    </nav>
+                  <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
+                    <button onClick={() => setActiveTab('dashboard')} className={`px-4 py-1.5 rounded-lg text-xs font-semibold ${activeTab === 'dashboard' ? 'bg-indigo-600 text-white' : 'text-slate-400'}`}>📊 真实看板</button>
+                    <button onClick={() => setActiveTab('calculator')} className={`px-4 py-1.5 rounded-lg text-xs font-semibold ${activeTab === 'calculator' ? 'bg-indigo-600 text-white' : 'text-slate-400'}`}>🧮 模拟计算</button>
                   </div>
                 </div>
               </header>
 
-              {/* Data Sync Console Panel */}
+              {/* 📡 智联行情数据接入中心 */}
               {showSyncPanel && (
-                <div className="bg-slate-950 border-b border-slate-800 transition-all duration-300">
-                  <div className="max-w-7xl mx-auto px-4 py-6">
-                    <div className="bg-slate-900/60 p-5 rounded-2xl border border-indigo-500/25 grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="bg-slate-950 border-b border-slate-800">
+                  <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div className="lg:col-span-5 flex flex-col gap-4 bg-slate-900/40 p-4 rounded-xl border border-slate-800">
                       
-                      {/* Sync Inputs & Controls */}
-                      <div className="lg:col-span-5 flex flex-col gap-4">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                            <span className="relative flex h-2 w-2">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-                            </span>
-                            数据中心智联接入网关
-                          </h3>
-                          <span className="text-[10px] bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full font-mono">
-                            Search Grounding Channel
-                          </span>
-                        </div>
-                        
-                        <p className="text-xs text-slate-400 leading-normal">
-                          该机制通过神经网络内置的 Google Search 实时抓取各交易所、权威金融自媒体披露的 A 股（科创/创业）、港股、美股最新 IPO，并强制按打新助手高精数据模型标准进行输出。
-                        </p>
+                      {/* 🔑 密钥配置输入框 */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-indigo-400">🔑 第一步：配置您的免费数据连接密钥 (API Key)</label>
+                        <input
+                          type="password"
+                          value={customApiKey}
+                          onChange={(e) => {
+                            setCustomApiKey(e.target.value);
+                            localStorage.setItem('gemini_api_key', e.target.value);
+                          }}
+                          placeholder="在此粘贴您的 Gemini 免费密钥 (AIzaSy...)"
+                          className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500"
+                        />
+                        <p className="text-[10px] text-slate-500">此密钥纯本地保存，不会上传到云端，安全可靠。</p>
+                      </div>
 
-                        {/* Overwrite or Merge options */}
-                        <div className="flex items-center justify-between text-xs bg-slate-950 p-2.5 rounded-lg border border-slate-800">
-                          <span className="text-slate-400">导入策略:</span>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => setMergeMode('append')}
-                              className={`px-2 py-1 rounded text-[10px] font-bold ${mergeMode === 'append' ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-slate-400'}`}
-                            >
-                              叠加新数据 (追加)
-                            </button>
-                            <button
-                              onClick={() => setMergeMode('overwrite')}
-                              className={`px-2 py-1 rounded text-[10px] font-bold ${mergeMode === 'overwrite' ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'}`}
-                            >
-                              清空并覆盖 (纯净模式)
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Quick Action Sync Buttons */}
+                      <div className="flex flex-col gap-2 pt-2 border-t border-slate-800">
+                        <label className="text-xs font-bold text-slate-300">第二步：选择要接入的市场抓取实时行情</label>
                         <div className="grid grid-cols-3 gap-2">
-                          <button
-                            onClick={() => runLiveSync('A')}
-                            disabled={isSyncing}
-                            className="bg-slate-950 hover:bg-slate-800 text-slate-100 py-2 px-2 rounded-xl text-xs font-bold border border-slate-800 hover:border-slate-700 flex flex-col items-center gap-1.5 transition-all disabled:opacity-50"
-                          >
-                            <span className="text-sm">🇨🇳</span>
-                            <span>同步 A 股</span>
-                          </button>
-                          <button
-                            onClick={() => runLiveSync('HK')}
-                            disabled={isSyncing}
-                            className="bg-slate-950 hover:bg-slate-800 text-slate-100 py-2 px-2 rounded-xl text-xs font-bold border border-slate-800 hover:border-slate-700 flex flex-col items-center gap-1.5 transition-all disabled:opacity-50"
-                          >
-                            <span className="text-sm">🇭🇰</span>
-                            <span>同步 港股</span>
-                          </button>
-                          <button
-                            onClick={() => runLiveSync('US')}
-                            disabled={isSyncing}
-                            className="bg-slate-950 hover:bg-slate-800 text-slate-100 py-2 px-2 rounded-xl text-xs font-bold border border-slate-800 hover:border-slate-700 flex flex-col items-center gap-1.5 transition-all disabled:opacity-50"
-                          >
-                            <span className="text-sm">🇺🇸</span>
-                            <span>同步 美股</span>
-                          </button>
-                        </div>
-
-                        {/* Custom Grounding Search Query */}
-                        <div className="relative mt-1">
-                          <input
-                            type="text"
-                            value={customSearchText}
-                            onChange={(e) => setCustomSearchText(e.target.value)}
-                            placeholder="输入特定个股如：获取近期半导体板块最新新股..."
-                            className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 px-3 pr-10 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
-                          />
-                          <button
-                            onClick={() => {
-                              if (customSearchText.trim()) {
-                                runLiveSync(customSearchText);
-                              }
-                            }}
-                            disabled={isSyncing || !customSearchText.trim()}
-                            className="absolute right-1 top-1 bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-1 rounded-lg text-[10px] font-bold disabled:opacity-50"
-                          >
-                            智能同步
-                          </button>
+                          <button onClick={() => runLiveSync('港股IPO')} disabled={isSyncing} className="bg-indigo-600 hover:bg-indigo-500 text-white py-2 px-1 rounded-lg text-xs font-bold disabled:opacity-50">🇭🇰 实时同步港股</button>
+                          <button onClick={() => runLiveSync('A股新股')} disabled={isSyncing} className="bg-indigo-600 hover:bg-indigo-500 text-white py-2 px-1 rounded-lg text-xs font-bold disabled:opacity-50">🇨🇳 实时同步A股</button>
+                          <button onClick={() => runLiveSync('美股IPO')} disabled={isSyncing} className="bg-indigo-600 hover:bg-indigo-500 text-white py-2 px-1 rounded-lg text-xs font-bold disabled:opacity-50">🇺🇸 实时同步美股</button>
                         </div>
                       </div>
+                    </div>
 
-                      {/* Live Logging Console */}
-                      <div className="lg:col-span-7 flex flex-col gap-3">
-                        <span className="text-xs font-bold text-slate-400 block">云同步状态控制台 (Sync Terminal Log)</span>
-                        
-                        <div className="bg-slate-950 rounded-xl p-3 border border-slate-800 font-mono text-[10px] text-teal-400 h-36 overflow-y-auto space-y-1.5 flex flex-col">
-                          {syncLogs.length > 0 ? (
-                            syncLogs.map((log, index) => (
-                              <div key={index} className="leading-relaxed">
-                                <span className="text-slate-600 select-none mr-1.5">&gt;</span>
-                                {log}
-                              </div>
-                            ))
-                          ) : (
-                            <div className="text-slate-600 italic m-auto">
-                              📡 暂无活跃同步会话，请点击左侧同步按钮加载实时市场数据。
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Displaying Citations and Grounding Attributions */}
-                        {citations.length > 0 && (
-                          <div className="mt-1">
-                            <span className="text-[10px] font-bold text-slate-500 block mb-1">🔗 数据来源及信源追溯 (Grounding Sources):</span>
-                            <div className="flex flex-wrap gap-2">
-                              {citations.map((cite, i) => (
-                                <a
-                                  key={i}
-                                  href={cite.uri}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="bg-indigo-950/40 border border-indigo-900/30 text-[9px] text-indigo-300 px-2 py-0.5 rounded hover:bg-indigo-900/60 transition-all inline-flex items-center gap-1 max-w-[200px]"
-                                >
-                                  <svg className="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                  </svg>
-                                  <span className="truncate">{cite.title || '财经信源'}</span>
-                                </a>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
+                    <div className="lg:col-span-7 flex flex-col gap-2 bg-slate-950 rounded-xl p-4 border border-slate-800 font-mono text-[11px] text-teal-400 h-36 overflow-y-auto">
+                      {syncLogs.length > 0 ? syncLogs.map((log, idx) => <div key={idx}>&gt; {log}</div>) : <div className="text-slate-500 italic m-auto">📡 等待激活真实全网行情数据流...</div>}
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Main Body */}
+              {/* 主体大盘面 */}
               <main className="flex-1 max-w-7xl w-full mx-auto p-4 flex flex-col gap-6">
-
-                {/* ==================== TAB 0: PORTFOLIO CONFIG OPTIMIZER ==================== */}
-                {activeTab === 'optimizer' && (
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fadeIn">
-                    
-                    {/* Left Hand: Manager Parameters Form */}
-                    <div className="lg:col-span-4 bg-slate-950 p-6 rounded-2xl border border-slate-800 flex flex-col gap-5">
-                      <div>
-                        <span className="text-[10px] bg-indigo-500/15 text-indigo-400 font-extrabold border border-indigo-500/20 px-2.5 py-1 rounded-full uppercase tracking-wider">
-                          💼 基金经理决策面板
-                        </span>
-                        <h2 className="text-xl font-bold text-white mt-3">配置优化参数</h2>
-                        <p className="text-xs text-slate-400 mt-1">设置本周 IPO 资金总额限制与对历史数据的风险敞口偏好</p>
-                      </div>
-
-                      {/* Input: Fund Size (AUM) */}
-                      <div className="space-y-2">
-                        <label className="block text-xs font-semibold text-slate-400">
-                          🏦 基金管理规模 (AUM)
-                        </label>
-                        <div className="relative">
-                          <input
-                            type="number"
-                            value={fundSize}
-                            onChange={(e) => setFundSize(Math.max(100000, parseInt(e.target.value) || 0))}
-                            className="w-full bg-slate-900 border border-slate-800 rounded-xl py-2.5 px-4 pl-14 text-sm font-bold font-mono text-white focus:outline-none focus:border-indigo-500"
-                          />
-                          <span className="absolute left-4 top-3 text-xs text-slate-500 font-extrabold font-mono">CNY/HKD</span>
-                        </div>
-                        <span className="text-[10px] text-slate-500 block text-right font-mono">
-                          {(fundSize / 1000000).toFixed(1)}M (百万级) 规模
-                        </span>
-                      </div>
-
-                      {/* Input: IPO allocation percentage of Fund */}
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-xs">
-                          <label className="font-semibold text-slate-400">打新专项资金比例 (IPO Limit)</label>
-                          <span className="font-bold text-indigo-400 font-mono">{ipoAllocRatio}%</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="1"
-                          max="40"
-                          value={ipoAllocRatio}
-                          onChange={(e) => setIpoAllocRatio(parseInt(e.target.value))}
-                          className="w-full h-1.5 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-                        />
-                        <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                          <span>总额度：{((fundSize * ipoAllocRatio) / 100).toLocaleString()}</span>
-                          <span>Max: 40%</span>
-                        </div>
-                      </div>
-
-                      {/* Input: Past IPO Win rate */}
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-xs">
-                          <label className="font-semibold text-slate-400">历史打新策略胜率</label>
-                          <span className="font-bold text-teal-400 font-mono">{historyWinRate}%</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="50"
-                          max="99"
-                          value={historyWinRate}
-                          onChange={(e) => setHistoryWinRate(parseInt(e.target.value))}
-                          className="w-full h-1.5 bg-slate-900 rounded-lg appearance-none cursor-pointer accent-teal-400"
-                        />
-                      </div>
-
-                      {/* Input: Investment Preference style */}
-                      <div className="space-y-2">
-                        <label className="block text-xs font-semibold text-slate-400">
-                          🎯 战术投资偏好风格
-                        </label>
-                        <div className="grid grid-cols-3 gap-2 bg-slate-900 p-1 rounded-xl border border-slate-800">
-                          {[
-                            { key: 'selective', label: '精选型', desc: '唯S/A必打' },
-                            { key: 'balanced', label: '均衡型', desc: '周期与回报' },
-                            { key: 'aggressive', label: '激进型', desc: '情绪热度优先' }
-                          ].map((style) => (
-                            <button
-                              key={style.key}
-                              onClick={() => setInvestPreference(style.key)}
-                              className={`py-2 px-1 rounded-lg text-xs font-bold flex flex-col items-center gap-0.5 transition-all ${
-                                investPreference === style.key
-                                  ? 'bg-indigo-600 text-white shadow-md'
-                                  : 'text-slate-400 hover:text-slate-200'
-                              }`}
-                            >
-                              <span>{style.label}</span>
-                              <span className="text-[8px] opacity-75 font-normal">{style.desc}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* IPO Selectors for Multi-Week Comparison */}
-                      <div className="space-y-3 pt-4 border-t border-slate-900">
-                        <label className="block text-xs font-bold text-slate-300 flex items-center justify-between">
-                          <span>选择同一招股周新股进行横向PK</span>
-                          <span className="text-[10px] text-slate-500">已选 {selectedIpoIdsForOpt.length} 个</span>
-                        </label>
-                        
-                        <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                          {ipoData.map((ipo) => {
-                            const isSelected = selectedIpoIdsForOpt.includes(ipo.id);
-                            return (
-                              <div
-                                key={ipo.id}
-                                onClick={() => {
-                                  if (isSelected) {
-                                    setSelectedIpoIdsForOpt(selectedIpoIdsForOpt.filter(id => id !== ipo.id));
-                                  } else {
-                                    setSelectedIpoIdsForOpt([...selectedIpoIdsForOpt, ipo.id]);
-                                  }
-                                }}
-                                className={`p-2.5 rounded-lg border text-xs cursor-pointer transition-all flex items-center justify-between ${
-                                  isSelected
-                                    ? 'bg-indigo-950/20 border-indigo-500/40 text-indigo-200'
-                                    : 'bg-slate-900/40 border-slate-900 text-slate-400 hover:bg-slate-900'
-                                }`}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <input
-                                    type="checkbox"
-                                    checked={isSelected}
-                                    readOnly
-                                    className="rounded text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5 bg-slate-950 border-slate-800"
-                                  />
-                                  <div>
-                                    <p className="font-bold text-slate-200">{ipo.name}</p>
-                                    <p className="text-[9px] font-mono opacity-85">{ipo.ticker} • {ipo.rating}级 • 冻结 {ipo.freezeDays}天</p>
-                                  </div>
-                                </div>
-                                <span className="text-[10px] font-bold text-amber-500">超购{ipo.oversubscribed}倍</span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Right Hand: Deep Allocation Results & Visualization */}
-                    <div className="lg:col-span-8 flex flex-col gap-6">
-                      
-                      {/* Summary of limits and allocations */}
-                      <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                          <span className="text-slate-500 text-xs">AUM 打新专项资金总额</span>
-                          <p className="text-2xl font-black text-indigo-400 font-mono mt-1">
-                            {((fundSize * ipoAllocRatio) / 100).toLocaleString()}{' '}
-                            <span className="text-xs font-normal">CNY/HKD</span>
-                          </p>
-                          <p className="text-[10px] text-slate-500 mt-1">占 AUM 总规模的 {ipoAllocRatio}%</p>
-                        </div>
-
-                        <div>
-                          <span className="text-slate-500 text-xs">对比标的数 / 决策周期</span>
-                          <p className="text-2xl font-black text-emerald-400 font-mono mt-1">
-                            {selectedIpoIdsForOpt.length} 只 <span className="text-xs font-normal">周内竞价</span>
-                          </p>
-                          <p className="text-[10px] text-slate-500 mt-1">包含 A/港/美 混合配售周期</p>
-                        </div>
-
-                        <div>
-                          <span className="text-slate-500 text-xs">预期综合加权中签贡献</span>
-                          <p className="text-2xl font-black text-amber-400 font-mono mt-1">
-                            ¥{optimizationResults.allocations.reduce((sum, item) => sum + item.expectedProfitContribution, 0).toLocaleString(undefined, {maximumFractionDigits: 0})}
-                          </p>
-                          <p className="text-[10px] text-slate-500 mt-1">预计加权综合首日净超额收益</p>
-                        </div>
-                      </div>
-
-                      {/* Comparison Matrix Table */}
-                      <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800">
-                        <div className="flex justify-between items-center mb-4">
-                          <h3 className="text-base font-bold text-white flex items-center gap-2">
-                            📊 资源分配对比矩阵与智能预分配百分比
-                          </h3>
-                          <span className="text-[10px] bg-slate-900 border border-slate-800 px-3 py-1 rounded-full text-indigo-300 font-bold">
-                            已启用: {investPreference === 'selective' ? '精选严选分配算法' : investPreference === 'aggressive' ? '市场情绪溢价分配算法' : '稳健资金周转分配算法'}
-                          </span>
-                        </div>
-
-                        {/* Simulated Stacked Bar Chart for Allocation */}
-                        <div className="w-full bg-slate-900 h-7 rounded-xl overflow-hidden flex mb-6 p-0.5 border border-slate-800">
-                          {optimizationResults.allocations.map((item, idx) => (
-                            <div
-                              key={item.id}
-                              style={{ width: `${item.allocatedPercent}%` }}
-                              className={`h-full flex items-center justify-center transition-all ${
-                                idx === 0 ? 'bg-indigo-600' :
-                                idx === 1 ? 'bg-teal-500' :
-                                idx === 2 ? 'bg-emerald-600' :
-                                'bg-violet-600'
-                              }`}
-                              title={`${item.name}: ${item.allocatedPercent.toFixed(1)}%`}
-                            >
-                              {item.allocatedPercent > 12 && (
-                                <span className="text-[10px] text-white font-extrabold truncate px-1">
-                                  {item.ticker} ({item.allocatedPercent.toFixed(0)}%)
-                                </span>
-                              )}
-                            </div>
-                          ))}
-                          {optimizationResults.allocations.length === 0 && (
-                            <div className="w-full h-full flex items-center justify-center text-xs text-slate-500 italic">
-                              未选定申购项目进行对比
-                            </div>
-                          )}
-                        </div>
-
-                        {/* IPO-by-IPO Detailed breakdown cards */}
-                        <div className="space-y-4">
-                          {optimizationResults.allocations.map((item, idx) => {
-                            const barColor = idx === 0 ? 'bg-indigo-600' : idx === 1 ? 'bg-teal-500' : idx === 2 ? 'bg-emerald-600' : 'bg-violet-600';
-                            const textColor = idx === 0 ? 'text-indigo-400' : idx === 1 ? 'text-teal-400' : idx === 2 ? 'text-emerald-400' : 'text-violet-400';
-                            
-                            return (
-                              <div key={item.id} className="bg-slate-900/40 border border-slate-900 rounded-xl p-5 hover:border-slate-800 transition-all">
-                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-900 pb-3 mb-3">
-                                  <div className="flex items-center gap-3">
-                                    <span className={`w-3.5 h-3.5 rounded-full ${barColor}`} />
-                                    <div>
-                                      <h4 className="text-sm font-extrabold text-white">{item.name}</h4>
-                                      <p className="text-[10px] text-slate-500 font-mono">{item.ticker} | {item.industry}</p>
-                                    </div>
-                                  </div>
-
-                                  <div className="flex items-center gap-4">
-                                    <div className="text-right">
-                                      <span className="text-[10px] text-slate-500 block">推荐动作</span>
-                                      <span className={`text-xs font-black ${
-                                        item.action.includes('全额') || item.action.includes('全力') ? 'text-purple-400' :
-                                        item.action.includes('积极') ? 'text-emerald-400' :
-                                        item.action.includes('放弃') ? 'text-rose-500' : 'text-amber-400'
-                                      }`}>{item.action}</span>
-                                    </div>
-
-                                    <div className="bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 text-center">
-                                      <span className="text-[9px] text-slate-500 block">分配额度比例</span>
-                                      <span className={`text-xs font-black font-mono ${textColor}`}>{item.allocatedPercent.toFixed(1)}%</span>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* Numeric Analysis row */}
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs mb-3">
-                                  <div>
-                                    <span className="text-slate-500">分配拟申购金:</span>
-                                    <p className="font-semibold text-slate-200 mt-0.5 font-mono">
-                                      ¥{item.allocatedFund.toLocaleString(undefined, {maximumFractionDigits: 0})}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <span className="text-slate-500">预估获配金额:</span>
-                                    <p className="font-semibold text-amber-500 mt-0.5 font-mono">
-                                      ¥{item.expectedAllotmentVal.toLocaleString(undefined, {maximumFractionDigits: 0})}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <span className="text-slate-500">资金冻结周期:</span>
-                                    <p className="font-semibold text-slate-200 mt-0.5">
-                                      {item.freezeDays} 天
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <span className="text-slate-500">预期收益贡献:</span>
-                                    <p className="font-bold text-emerald-400 mt-0.5 font-mono">
-                                      +¥{item.expectedProfitContribution.toLocaleString(undefined, {maximumFractionDigits: 0})}
-                                    </p>
-                                  </div>
-                                </div>
-
-                                {/* Reasoning block */}
-                                <div className="bg-slate-950 p-3 rounded-lg border border-slate-900 text-xs leading-relaxed text-slate-300">
-                                  <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider block mb-1">💡 基金经理投研配置决策报告：</span>
-                                  {item.reason}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                    </div>
-
-                  </div>
-                )}
-
-                {/* ==================== TAB 1: DASHBOARD ==================== */}
+                
                 {activeTab === 'dashboard' && (
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeIn">
                     
-                    {/* Left & Middle Column: IPO Markets and Lists */}
-                    <div className="lg:col-span-2 flex flex-col gap-6">
-                      
-                      {/* Filter Row */}
-                      <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row gap-4 items-center justify-between">
-                        
-                        {/* Market Segment Buttons */}
-                        <div className="flex gap-2 w-full sm:w-auto">
-                          {['ALL', 'HK', 'A', 'US'].map((m) => (
-                            <button
-                              key={m}
-                              onClick={() => setMarketFilter(m)}
-                              className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
-                                marketFilter === m
-                                  ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/15'
-                                  : 'bg-slate-900 text-slate-400 border-slate-800 hover:border-slate-700'
-                              }`}
-                            >
-                              {m === 'ALL' ? '全部市场' : m === 'HK' ? '🇭🇰 港股 IPO' : m === 'A' ? '🇨🇳 A股 打新' : '🇺🇸 美股 IPO'}
+                    {/* 左侧列表 */}
+                    <div className="lg:col-span-2 flex flex-col gap-4">
+                      <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-wrap gap-4 items-center justify-between">
+                        <div className="flex gap-2">
+                          {['ALL', 'HK', 'A', 'US'].map(m => (
+                            <button key={m} onClick={() => setMarketFilter(m)} className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${marketFilter === m ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-slate-400 border-slate-800'}`}>
+                              {m === 'ALL' ? '全部市场' : m === 'HK' ? '🇭🇰 港股' : m === 'A' ? '🇨🇳 A股' : '🇺🇸 美股'}
                             </button>
                           ))}
                         </div>
-
-                        {/* Status Options */}
-                        <div className="flex gap-2 w-full sm:w-auto">
-                          <select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            className="w-full sm:w-auto bg-slate-900 text-slate-200 text-xs rounded-lg border border-slate-800 px-3 py-1.5 focus:outline-none focus:border-indigo-500"
-                          >
-                            <option value="ALL">所有招股阶段</option>
-                            <option value="subscription">招股中</option>
-                            <option value="upcoming">待招股</option>
-                            <option value="listed">已挂牌上市</option>
-                          </select>
-
-                          {/* Search bar */}
-                          <input
-                            type="text"
-                            placeholder="输入代码 / 股票名称 / 行业..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-200 px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 w-full sm:w-48"
-                          />
-                        </div>
-
+                        <input type="text" placeholder="搜索名称/行业..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-200 px-3 py-1.5 focus:outline-none w-full sm:w-48" />
                       </div>
 
-                      {/* Grid List of IPOs */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {filteredIpoData.length > 0 ? (
-                          filteredIpoData.map((ipo) => (
-                            <div
-                              key={ipo.id}
-                              onClick={() => setSelectedIpo(ipo)}
-                              className={`bg-slate-950 p-5 rounded-2xl border transition-all cursor-pointer hover:shadow-xl hover:shadow-indigo-500/5 ${
-                                selectedIpo.id === ipo.id
-                                  ? 'border-indigo-500 bg-slate-950/90 ring-1 ring-indigo-500/20'
-                                  : 'border-slate-800 hover:border-slate-700'
-                              }`}
-                            >
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <div className="flex items-center gap-1.5">
-                                    <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-extrabold ${
-                                      ipo.market === 'HK' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                                      ipo.market === 'A' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
-                                      'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                                    }`}>
-                                      {ipo.market === 'HK' ? '港股' : ipo.market === 'A' ? 'A股科创' : '美股'}
-                                    </span>
-                                    <span className="text-[10px] text-slate-500">{ipo.industry}</span>
-                                  </div>
-                                  <h3 className="text-base font-bold text-slate-100 mt-2">{ipo.name}</h3>
-                                  <p className="text-xs text-indigo-400 mt-0.5 font-mono">{ipo.ticker}</p>
-                                </div>
-
-                                {/* Recommendation Grade badge */}
-                                <div className="flex flex-col items-end">
-                                  <span className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm border shadow-sm ${
-                                    ipo.rating === 'S' ? 'bg-purple-900/40 text-purple-300 border-purple-500/30' :
-                                    ipo.rating === 'A' ? 'bg-emerald-900/40 text-emerald-300 border-emerald-500/30' :
-                                    ipo.rating === 'B' ? 'bg-indigo-900/40 text-indigo-300 border-indigo-500/30' :
-                                    'bg-slate-800/40 text-slate-300 border-slate-700/30'
-                                  }`}>
-                                    {ipo.rating}
-                                  </span>
-                                  <span className="text-[9px] text-slate-500 mt-1">推荐等级</span>
-                                </div>
+                        {filteredIpoData.map(ipo => (
+                          <div key={ipo.id} onClick={() => setSelectedIpo(ipo)} className={`bg-slate-950 p-5 rounded-xl border cursor-pointer transition-all ${selectedIpo.id === ipo.id ? 'border-indigo-500' : 'border-slate-800'}`}>
+                            <div className="flex justify-between">
+                              <div>
+                                <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-bold">{ipo.market} | {ipo.industry}</span>
+                                <h3 className="text-base font-bold text-white mt-2">{ipo.name}</h3>
+                                <p className="text-xs text-indigo-400 font-mono mt-0.5">{ipo.ticker}</p>
                               </div>
-
-                              {/* Financial Detail Summary Row */}
-                              <div className="mt-4 pt-4 border-t border-slate-900/80 grid grid-cols-2 gap-y-3 gap-x-2 text-xs">
-                                <div>
-                                  <p className="text-slate-500">招股价/定价</p>
-                                  <p className="font-semibold text-slate-200 mt-0.5">{ipo.priceRange}</p>
-                                </div>
-                                <div>
-                                  <p className="text-slate-500">超额认购倍数</p>
-                                  <p className="font-semibold text-amber-400 mt-0.5">{ipo.oversubscribed} 倍</p>
-                                </div>
-                                <div>
-                                  <p className="text-slate-500">入场费门槛</p>
-                                  <p className="font-semibold text-slate-200 mt-0.5">{ipo.minEntry}</p>
-                                </div>
-                                <div>
-                                  <p className="text-slate-500">截止/上市时间</p>
-                                  <p className="font-semibold text-slate-300 mt-0.5">{ipo.endDate || '-'}</p>
-                                </div>
-                              </div>
-
-                              {/* Display Progress Bar for Active Subscription */}
-                              {ipo.status === 'subscription' && (
-                                <div className="mt-4">
-                                  <div className="flex justify-between text-[10px] mb-1">
-                                    <span className="text-emerald-400 flex items-center gap-1">
-                                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                                      活跃招股认购中
-                                    </span>
-                                    <span className="text-slate-500">正在发售</span>
-                                  </div>
-                                  <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden">
-                                    <div className="bg-gradient-to-r from-teal-500 to-emerald-500 h-full w-[75%]" />
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Listed Actual Gain Display */}
-                              {ipo.status === 'listed' && (
-                                <div className="mt-4 bg-slate-900/60 p-2 rounded-lg border border-slate-800/40 flex justify-between items-center">
-                                  <span className="text-[10px] text-slate-400">上市首日表现:</span>
-                                  <span className={`text-xs font-bold ${ipo.firstDayPerformance > 0 ? 'text-emerald-400' : ipo.firstDayPerformance < 0 ? 'text-rose-500' : 'text-slate-400'}`}>
-                                    {ipo.firstDayPerformance > 0 ? '+' : ''}{ipo.firstDayPerformance}%
-                                  </span>
-                                </div>
-                              )}
+                              <span className="w-8 h-8 rounded bg-indigo-900/40 border border-indigo-500/30 text-white flex items-center justify-center font-black">{ipo.rating}</span>
                             </div>
-                          ))
-                        ) : (
-                          <div className="col-span-2 bg-slate-950 p-12 rounded-2xl border border-slate-800 text-center flex flex-col items-center justify-center">
-                            <svg className="w-12 h-12 text-slate-600 mb-3" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M15.182 16.318A4.486 4.486 0 0012.016 15a4.486 4.486 0 00-3.198 1.318M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
-                            </svg>
-                            <p className="text-slate-400 text-sm font-semibold">没有检索到对应市场或关键字的IPO项目</p>
-                            <button onClick={() => {setMarketFilter('ALL'); setStatusFilter('ALL'); setSearchTerm('');}} className="mt-3 text-xs text-indigo-400 underline">重置过滤器</button>
+                            <div className="mt-4 pt-4 border-t border-slate-900 grid grid-cols-2 gap-2 text-xs text-slate-400">
+                              <div>定价/区间: <span className="text-white font-semibold">{ipo.priceRange}</span></div>
+                              <div>最新超购: <span className="text-amber-400 font-semibold">{ipo.oversubscribed} 倍</span></div>
+                            </div>
                           </div>
-                        )}
+                        ))}
                       </div>
-
-                      {/* Market Overview Visual Dashboard Stats Cards */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                          <span className="text-slate-500 text-xs">大盘新股赚钱效应</span>
-                          <div className="flex items-baseline gap-2 mt-1">
-                            <span className="text-xl font-extrabold text-emerald-400">+88.2%</span>
-                            <span className="text-[10px] text-slate-400">平均上市胜率</span>
-                          </div>
-                          <div className="w-full bg-slate-900 h-1 rounded-full mt-2">
-                            <div className="bg-emerald-400 h-1 rounded-full w-[88.2%]" />
-                          </div>
-                        </div>
-
-                        <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                          <span className="text-slate-500 text-xs">港股一手中签优先率</span>
-                          <div className="flex items-baseline gap-2 mt-1">
-                            <span className="text-xl font-extrabold text-indigo-400">35.4%</span>
-                            <span className="text-[10px] text-slate-400">红鞋机制普惠</span>
-                          </div>
-                          <div className="w-full bg-slate-900 h-1 rounded-full mt-2">
-                            <div className="bg-indigo-400 h-1 rounded-full w-[35.4%]" />
-                          </div>
-                        </div>
-
-                        <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                          <span className="text-slate-500 text-xs">当季最大IPO盈利纪录</span>
-                          <div className="flex items-baseline gap-2 mt-1">
-                            <span className="text-xl font-extrabold text-amber-400">+115,000 CNY</span>
-                            <span className="text-[10px] text-slate-400">单个A股申购</span>
-                          </div>
-                          <div className="w-full bg-slate-900 h-1 rounded-full mt-2">
-                            <div className="bg-amber-400 h-1 rounded-full w-[78%]" />
-                          </div>
-                        </div>
-                      </div>
-
                     </div>
 
-                    {/* Right Column: Deep-Dive Investment Analysis for selected IPO */}
+                    {/* 右侧深度剖析栏 + 📺 TradingView 真实走势行情图表 */}
                     <div className="lg:col-span-1">
                       {selectedIpo && (
-                        <div className="bg-slate-950 p-6 rounded-2xl border border-indigo-500/20 sticky top-24 flex flex-col gap-5">
-                          <div className="flex justify-between items-center border-b border-slate-900 pb-4">
-                            <div>
-                              <h2 className="text-lg font-black text-white">{selectedIpo.name}</h2>
-                              <p className="text-xs text-slate-400 mt-0.5 font-mono">{selectedIpo.ticker} | {selectedIpo.industry}</p>
-                            </div>
-                            <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${
-                              selectedIpo.status === 'subscription' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 animate-pulse' :
-                              selectedIpo.status === 'upcoming' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/20' :
-                              'bg-slate-800 text-slate-400 border border-slate-700'
-                            }`}>
-                              {selectedIpo.status === 'subscription' ? '招股中' : selectedIpo.status === 'upcoming' ? '待招股' : '已上市'}
-                            </span>
+                        <div className="bg-slate-950 p-6 rounded-xl border border-slate-800 flex flex-col gap-5 sticky top-24">
+                          <div>
+                            <h2 className="text-lg font-bold text-white">{selectedIpo.name}</h2>
+                            <p className="text-xs text-indigo-400 font-mono mt-0.5">{selectedIpo.ticker} 行情诊断</p>
                           </div>
 
-                          {/* Rating Block with Description */}
-                          <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800 flex items-center gap-4">
-                            <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-indigo-700 text-white rounded-2xl flex flex-col justify-center items-center font-black shadow-lg">
-                              <span className="text-2xl leading-none">{selectedIpo.rating}</span>
-                              <span className="text-[9px] uppercase tracking-wider text-indigo-200 mt-1 font-bold">评级</span>
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-xs text-slate-400">综合估值和人气建议：</p>
-                              <p className="text-xs font-bold text-slate-200 mt-1">
-                                {selectedIpo.rating === 'S' && '顶级标的，全力申购为主'}
-                                {selectedIpo.rating === 'A' && '核心实力优秀，建议大额积极认购'}
-                                {selectedIpo.rating === 'B' && '中等稳健，适合小额或现金一手'}
-                                {selectedIpo.rating === 'C' && '定价过高或承销机构不佳，建议回避'}
-                              </p>
-                            </div>
+                          {/* 📺 真实走势图集成（根据所选新股代码动态变换） */}
+                          <div className="bg-slate-900 rounded-xl p-3 border border-slate-800">
+                            <span className="text-[11px] font-bold text-slate-400 block mb-2">📊 真实市场K线及技术面图表 (由 TradingView 驱动)</span>
+                            <iframe 
+                              src={`https://s.tradingview.com/widgetembed/?frameElementId=tradingview_chart&symbol=${
+                                selectedIpo.ticker.endsWith('.SH') ? 'SSE:' + selectedIpo.ticker.replace('.SH','') :
+                                selectedIpo.ticker.endsWith('.SZ') ? 'SZSE:' + selectedIpo.ticker.replace('.SZ','') :
+                                selectedIpo.ticker.endsWith('.HK') ? 'HKEX:' + parseInt(selectedIpo.ticker.replace('.HK','')) :
+                                selectedIpo.ticker.replace('.US','')
+                              }&interval=D&hidesidetoolbar=1&symboledit=0&saveimage=1&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Asia%2FShanghai&studies_overrides=%7B%7D&overrides=%7B%7D&enabled_features=%5B%5D&disabled_features=%5B%5D&locale=zh_CN`}
+                              width="100%" 
+                              height="220" 
+                              frameBorder="0" 
+                              allowTransparency="true" 
+                              scrolling="no" 
+                              allowFullScreen
+                              className="rounded-lg"
+                            ></iframe>
                           </div>
 
-                          {/* Research Indicators Matrix */}
-                          <div className="flex flex-col gap-3">
-                            <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider">个股关键投研指标</h4>
-                            
-                            <div className="space-y-2">
-                              <div className="bg-slate-900/40 p-2.5 rounded-lg border border-slate-900 flex justify-between items-center">
-                                <span className="text-xs text-slate-400 flex items-center gap-1.5">
-                                  🤝 保荐人资质
-                                </span>
-                                <div className="text-right">
-                                  <span className="text-xs font-semibold text-slate-200 block max-w-[140px] truncate">{selectedIpo.sponsor}</span>
-                                  <span className="block text-[9px] text-emerald-400">历史胜率 {selectedIpo.sponsorSuccessRate}%</span>
-                                </div>
-                              </div>
-
-                              <div className="bg-slate-900/40 p-2.5 rounded-lg border border-slate-900 flex justify-between items-center">
-                                <span className="text-xs text-slate-400 flex items-center gap-1.5">
-                                  💎 基石投资者
-                                </span>
-                                <div className="text-right max-w-[180px]">
-                                  <span className="text-xs font-semibold text-slate-200 block truncate" title={selectedIpo.cornerstones}>{selectedIpo.cornerstones}</span>
-                                </div>
-                              </div>
-
-                              <div className="bg-slate-900/40 p-2.5 rounded-lg border border-slate-900 flex justify-between items-center">
-                                <span className="text-xs text-slate-400 flex items-center gap-1.5">
-                                  📈 估值市盈率 (PE)
-                                </span>
-                                <span className={`text-xs font-semibold ${selectedIpo.valuationPE < 0 ? 'text-amber-400' : 'text-slate-200'}`}>
-                                  {selectedIpo.valuationPE < 0 ? `未盈利` : `${selectedIpo.valuationPE} 倍`}
-                                </span>
-                              </div>
-
-                              <div className="bg-slate-900/40 p-2.5 rounded-lg border border-slate-900 flex justify-between items-center">
-                                <span className="text-xs text-slate-400 flex items-center gap-1.5">
-                                  🔥 当前热度
-                                </span>
-                                <span className="text-xs font-bold text-amber-400">
-                                  超额 {selectedIpo.oversubscribed} 倍
-                                </span>
-                              </div>
-                            </div>
+                          <div className="space-y-2 text-xs text-slate-300">
+                            <div className="bg-slate-900 p-2.5 rounded flex justify-between"><span>🤝 顶级保荐人:</span><span className="font-bold text-white">{selectedIpo.sponsor}</span></div>
+                            <div className="bg-slate-900 p-2.5 rounded flex justify-between"><span>💎 基石阵容:</span><span className="font-bold text-white truncate max-w-[160px]">{selectedIpo.cornerstones}</span></div>
+                            <div className="bg-slate-900 p-2.5 rounded flex justify-between"><span>📈 动态估值 PE:</span><span className="font-bold text-white">{selectedIpo.valuationPE} 倍</span></div>
                           </div>
 
-                          {/* Analyst AI Summary */}
-                          <div className="bg-indigo-950/20 border border-indigo-900/30 p-4 rounded-xl">
-                            <span className="text-xs font-bold text-indigo-400 block mb-1">💡 投研诊断意见</span>
-                            <p className="text-xs text-slate-300 leading-relaxed">{selectedIpo.summary}</p>
-                          </div>
-
-                          {/* Quick Action Buttons */}
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => {
-                                setCalcMarket(selectedIpo.market);
-                                const parsedPrice = parseFloat(selectedIpo.minEntry.replace(/[^0-9.]/g, ''));
-                                if (!isNaN(parsedPrice)) {
-                                  setCalcPricePerLot(parsedPrice);
-                                }
-                                setCalcAllotmentRate(selectedIpo.oversubscribed > 100 ? 5 : selectedIpo.oversubscribed > 20 ? 15 : 40);
-                                setActiveTab('calculator');
-                                showToast(`已成功将 ${selectedIpo.name} 的数据配置至模拟器`);
-                              }}
-                              className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/10"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 11h.01M12 14h.01M15 11h.01M12 7h.01M15 7h.01M15 14h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                              </svg>
-                              导入模拟计算
-                            </button>
-                            <button
-                              onClick={() => {
-                                if (selectedIpo.sponsorSuccessRate > 80) setScoreSponsor('excellent');
-                                else if (selectedIpo.sponsorSuccessRate < 60) setScoreSponsor('poor');
-                                else setScoreSponsor('average');
-
-                                if (selectedIpo.cornerstones && (selectedIpo.cornerstones.includes('占比 40') || selectedIpo.cornerstones.includes('大基金') || selectedIpo.cornerstones.includes('奔驰'))) setScoreCornerstone('strong');
-                                else if (!selectedIpo.cornerstones || selectedIpo.cornerstones.includes('无')) setScoreCornerstone('none');
-                                else setScoreCornerstone('medium');
-
-                                if (selectedIpo.oversubscribed > 100) setScoreSentiment('hot');
-                                else if (selectedIpo.oversubscribed < 10) setScoreSentiment('cold');
-                                else setScoreSentiment('normal');
-
-                                if (selectedIpo.industry && (selectedIpo.industry.includes('医药') || selectedIpo.industry.includes('智能') || selectedIpo.industry.includes('AI') || selectedIpo.industry.includes('芯片') || selectedIpo.industry.includes('半导体'))) setScoreIndustry('hotSector');
-                                else setScoreIndustry('traditional');
-
-                                setActiveTab('scorer');
-                                showToast(`已加载 ${selectedIpo.name} 至智能因子评分卡`);
-                              }}
-                              className="bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 font-semibold p-2.5 rounded-xl text-xs transition-all"
-                              title="载入多维度深度评级评分"
-                            >
-                              🎯 因子评分
-                            </button>
+                          <div className="bg-indigo-950/20 border border-indigo-900/30 p-4 rounded-xl text-xs text-slate-300">
+                            <span className="font-bold text-indigo-400 block mb-1">💡 机构分析报告</span>
+                            {selectedIpo.summary}
                           </div>
                         </div>
                       )}
@@ -1541,608 +395,42 @@
                   </div>
                 )}
 
-                {/* ==================== TAB 2: CALCULATOR ==================== */}
+                {/* 盈亏模拟计算卡 */}
                 {activeTab === 'calculator' && (
-                  <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 animate-fadeIn">
-                    <div className="border-b border-slate-900 pb-4 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                      <div>
-                        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                          🧮 新股申购盈亏高精模拟器
-                        </h2>
-                        <p className="text-xs text-slate-400 mt-1">完美模拟港股杠杆融资、A股市值无本及美股直申的各项资金成本与预期盈亏</p>
-                      </div>
-
-                      {/* Selector for Calculator Market Type */}
-                      <div className="flex gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
-                        {['HK', 'A', 'US'].map((mk) => (
-                          <button
-                            key={mk}
-                            onClick={() => setCalcMarket(mk)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                              calcMarket === mk
-                                ? 'bg-indigo-600 text-white shadow'
-                                : 'text-slate-400 hover:text-slate-200'
-                            }`}
-                          >
-                            {mk === 'HK' ? '🇭🇰 港股杠杆/孖展' : mk === 'A' ? '🇨🇳 A股免本额度' : '🇺🇸 美股直接配售'}
-                          </button>
-                        ))}
+                  <div className="bg-slate-950 p-6 rounded-xl border border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-6 animate-fadeIn">
+                    <div className="flex flex-col gap-4 bg-slate-900/40 p-5 rounded-xl border border-slate-800">
+                      <h3 className="text-sm font-bold text-indigo-400">调节测算指标</h3>
+                      <div className="space-y-3 text-xs">
+                        <div><label className="block text-slate-400 mb-1">账户本金 ({calcMarket}):</label><input type="number" value={calcPrincipal} onChange={e=>setCalcPrincipal(Number(e.target.value))} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white" /></div>
+                        <div><label className="block text-slate-400 mb-1">每手金额 / 中签配额面值:</label><input type="number" value={calcPricePerLot} onChange={e=>setCalcPricePerLot(Number(e.target.value))} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white" /></div>
+                        <div><label className="block text-slate-400 mb-1">预估中签率 %:</label><input type="number" value={calcAllotmentRate} onChange={e=>setCalcAllotmentRate(Number(e.target.value))} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white" /></div>
+                        <div><label className="block text-slate-400 mb-1">预期开盘首日涨幅 %:</label><input type="number" value={calcFirstDayGain} onChange={e=>setCalcFirstDayGain(Number(e.target.value))} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white" /></div>
                       </div>
                     </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                      
-                      {/* Left Column: Form Inputs */}
-                      <div className="lg:col-span-5 flex flex-col gap-5">
-                        <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-wider">一、输入模拟申购参数</h3>
-                        
-                        {/* 1. Principal & Margin (HK Only) */}
-                        <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-900 flex flex-col gap-4">
-                          <div>
-                            <label className="block text-xs font-semibold text-slate-400 mb-2">
-                              💰 可用本金 (账户实存现金)
-                            </label>
-                            <div className="relative">
-                              <input
-                                type="number"
-                                value={calcPrincipal}
-                                onChange={(e) => setCalcPrincipal(Math.max(0, parseInt(e.target.value) || 0))}
-                                className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2.5 px-3 pl-12 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 font-mono"
-                              />
-                              <span className="absolute left-3 top-2.5 text-xs text-slate-500 font-bold">
-                                {calcMarket === 'HK' ? 'HKD' : calcMarket === 'A' ? 'CNY' : 'USD'}
-                              </span>
-                            </div>
-                          </div>
-
-                          {calcMarket === 'HK' && (
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <label className="block text-xs font-semibold text-slate-400 mb-1.5">
-                                  🔥 孖展融资杠杆
-                                </label>
-                                <select
-                                  value={calcLeverage}
-                                  onChange={(e) => setCalcLeverage(parseInt(e.target.value))}
-                                  className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500"
-                                >
-                                  <option value="1">1倍 (现金认购)</option>
-                                  <option value="10">10倍 杠杆</option>
-                                  <option value="20">20倍 杠杆</option>
-                                  <option value="50">50倍 高额孖展</option>
-                                </select>
-                              </div>
-
-                              <div>
-                                <label className="block text-xs font-semibold text-slate-400 mb-1.5">
-                                  ⏳ 计息天数 (资金冻结期)
-                                </label>
-                                <input
-                                  type="number"
-                                  value={calcInterestDays}
-                                  onChange={(e) => setCalcInterestDays(Math.max(1, parseInt(e.target.value) || 1))}
-                                  className="w-full bg-slate-950 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-slate-100 focus:outline-none focus:border-indigo-500 font-mono"
-                                />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* 2. IPO Stock Details */}
-                        <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-900 flex flex-col gap-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-xs font-semibold text-slate-400 mb-1.5">
-                                {calcMarket === 'A' ? '📦 单个中签配额金额' : '📦 每手申购金额'}
-                              </label>
-                              <input
-                                type="number"
-                                value={calcPricePerLot}
-                                onChange={(e) => setCalcPricePerLot(Math.max(1, parseInt(e.target.value) || 1))}
-                                className="w-full bg-slate-950 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-slate-100 focus:outline-none focus:border-indigo-500 font-mono"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block text-xs font-semibold text-slate-400 mb-1.5">
-                                🔢 期望申请手数
-                              </label>
-                              <input
-                                type="number"
-                                disabled={calcMarket === 'A'}
-                                value={calcMarket === 'A' ? 1 : calcLotsApplied}
-                                onChange={(e) => setCalcLotsApplied(Math.max(1, parseInt(e.target.value) || 1))}
-                                className="w-full bg-slate-950 border border-slate-800 disabled:opacity-50 rounded-lg py-1.5 px-3 text-xs text-slate-100 focus:outline-none focus:border-indigo-500 font-mono"
-                              />
-                            </div>
-                          </div>
-
-                          {calcMarket === 'HK' && (
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <label className="block text-xs font-semibold text-slate-400 mb-1.5">
-                                  🎫 券商单次认购费
-                                </label>
-                                <input
-                                  type="number"
-                                  value={calcSubFee}
-                                  onChange={(e) => setCalcSubFee(Math.max(0, parseInt(e.target.value) || 0))}
-                                  className="w-full bg-slate-950 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-slate-100 focus:outline-none focus:border-indigo-500 font-mono"
-                                />
-                              </div>
-
-                              <div>
-                                <label className="block text-xs font-semibold text-slate-400 mb-1.5">
-                                  📊 融资年化利率 %
-                                </label>
-                                <input
-                                  type="number"
-                                  step="0.1"
-                                  value={calcInterestRate}
-                                  onChange={(e) => setCalcInterestRate(Math.max(0, parseFloat(e.target.value) || 0))}
-                                  className="w-full bg-slate-950 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-slate-100 focus:outline-none focus:border-indigo-500 font-mono"
-                                />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* 3. Expected Yields */}
-                        <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-900 flex flex-col gap-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <div className="flex justify-between items-center mb-1.5">
-                                <label className="text-xs font-semibold text-slate-400">
-                                  🎯 预估中签率 %
-                                </label>
-                                <span className="text-[10px] text-slate-500">(1-100)</span>
-                              </div>
-                              <input
-                                type="number"
-                                value={calcAllotmentRate}
-                                onChange={(e) => setCalcAllotmentRate(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))}
-                                className="w-full bg-slate-950 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-slate-100 focus:outline-none focus:border-indigo-500 font-mono"
-                              />
-                            </div>
-
-                            <div>
-                              <div className="flex justify-between items-center mb-1.5">
-                                <label className="text-xs font-semibold text-slate-400">
-                                  🚀 预期上市/暗盘涨幅 %
-                                </label>
-                                <span className="text-[10px] text-slate-500">可负值</span>
-                              </div>
-                              <input
-                                type="number"
-                                value={calcFirstDayGain}
-                                onChange={(e) => setCalcFirstDayGain(parseInt(e.target.value) || 0)}
-                                className="w-full bg-slate-950 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-slate-100 focus:outline-none focus:border-indigo-500 font-mono"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
+                    <div className="bg-slate-900 p-6 rounded-xl border border-slate-800 flex flex-col justify-between">
+                      <h3 className="text-sm font-bold text-white border-b border-slate-800 pb-2">盈亏精算报告</h3>
+                      <div className="space-y-2 text-xs text-slate-400 mt-4">
+                        <div className="flex justify-between"><span>预计获配股持仓额:</span><span className="text-white font-mono">{calculatorResults.valueWon}</span></div>
+                        <div className="flex justify-between"><span>资金硬性沉没成本:</span><span className="text-rose-400 font-mono">{calculatorResults.nonRefundableCost}</span></div>
+                        <div className="flex justify-between"><span>保本平衡涨幅界限:</span><span className="text-amber-400 font-mono">{calculatorResults.breakEvenGain}%</span></div>
                       </div>
-
-                      {/* Right Column: Visual Simulated Report Panel */}
-                      <div className="lg:col-span-7 bg-slate-900 rounded-2xl border border-slate-800 p-6 flex flex-col justify-between">
-                        <div>
-                          <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-4">
-                            <h3 className="text-sm font-bold text-white uppercase tracking-wider">二、预期账单明细与盈亏报告</h3>
-                            <span className="bg-slate-800 text-indigo-400 text-[10px] uppercase font-mono px-2.5 py-0.5 rounded border border-slate-700">
-                              Market Type: {calcMarket}
-                            </span>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            
-                            {/* Left Mini Column - Sourcing Costs */}
-                            <div className="space-y-4">
-                              <h4 className="text-xs font-bold text-slate-400 border-l-2 border-indigo-500 pl-2">本金与认购规模</h4>
-                              
-                              <div className="space-y-2">
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-slate-500">最大理论可申购数:</span>
-                                  <span className="font-semibold text-slate-300 font-mono">{calculatorResults.actualLots} 手</span>
-                                </div>
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-slate-500">实际名义申购金额:</span>
-                                  <span className="font-semibold text-slate-300 font-mono">
-                                    {calculatorResults.actualSubValue.toLocaleString()} {calcMarket === 'HK' ? 'HKD' : calcMarket === 'A' ? 'CNY' : 'USD'}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-slate-500">向券商融资借款额:</span>
-                                  <span className="font-semibold text-amber-500 font-mono">
-                                    {calculatorResults.borrowedAmount.toLocaleString()} {calcMarket === 'HK' ? 'HKD' : 'N/A'}
-                                  </span>
-                                </div>
-                              </div>
-
-                              <h4 className="text-xs font-bold text-slate-400 border-l-2 border-indigo-500 pl-2 mt-4">固定沉没交易成本</h4>
-                              <div className="space-y-2">
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-slate-500">融资计息利息支出:</span>
-                                  <span className="font-semibold text-slate-300 font-mono">{calculatorResults.interestCost} {calcMarket === 'HK' ? 'HKD' : '-'}</span>
-                                </div>
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-slate-500">申购手续费:</span>
-                                  <span className="font-semibold text-slate-300 font-mono">{calcMarket === 'HK' ? `${calcSubFee} HKD` : '0.00'}</span>
-                                </div>
-                                <div className="flex justify-between text-xs font-semibold text-slate-300">
-                                  <span className="text-slate-500">硬性沉没总成本:</span>
-                                  <span className="text-rose-400 font-mono">{calculatorResults.nonRefundableCost} {calcMarket === 'HK' ? 'HKD' : '0.00'}</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Right Mini Column - Win Estimation */}
-                            <div className="space-y-4">
-                              <h4 className="text-xs font-bold text-slate-400 border-l-2 border-indigo-500 pl-2">中签及首日溢价估算</h4>
-                              
-                              <div className="space-y-2">
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-slate-500">预计加权中签数:</span>
-                                  <span className="font-semibold text-emerald-400 font-mono">{calculatorResults.expectedLotsWon} 手</span>
-                                </div>
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-slate-500">中签持仓总金额:</span>
-                                  <span className="font-semibold text-slate-300 font-mono">
-                                    {parseInt(calculatorResults.valueWon).toLocaleString()} {calcMarket === 'HK' ? 'HKD' : calcMarket === 'A' ? 'CNY' : 'USD'}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-slate-500">首日交易佣金摩擦:</span>
-                                  <span className="font-semibold text-slate-300 font-mono">{calculatorResults.transactionCost} {calcMarket === 'HK' ? 'HKD' : 'CNY'}</span>
-                                </div>
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-slate-500">上市首日毛利润:</span>
-                                  <span className={`font-semibold font-mono ${parseFloat(calculatorResults.grossGain) >= 0 ? 'text-emerald-400' : 'text-rose-500'}`}>
-                                    {parseFloat(calculatorResults.grossGain) >= 0 ? '+' : ''}{calculatorResults.grossGain} {calcMarket === 'HK' ? 'HKD' : 'CNY'}
-                                  </span>
-                                </div>
-                              </div>
-
-                              <h4 className="text-xs font-bold text-slate-400 border-l-2 border-indigo-500 pl-2 mt-4">保本与交易防守线</h4>
-                              <div className="space-y-2">
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-slate-500">保本平衡所需首日涨幅:</span>
-                                  <span className="font-bold text-amber-500 font-mono">{calculatorResults.breakEvenGain}%</span>
-                                </div>
-                                <p className="text-[10px] text-slate-500 leading-normal">
-                                  * 新股上市涨幅必须高于该百分比，才能完全抵消融资利息、认购费和交易佣金，实现净利。
-                                </p>
-                              </div>
-                            </div>
-
-                          </div>
-                        </div>
-
-                        {/* Big Profit/Loss Metric Summary Banner */}
-                        <div className="mt-8 pt-6 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
-                          <div className="flex flex-col">
-                            <span className="text-xs text-slate-500 font-semibold">预期净利润 (扣除各项成本摩擦后)</span>
-                            <div className="flex items-baseline gap-2 mt-1">
-                              <span className={`text-3xl font-black font-mono tracking-tight ${
-                                parseFloat(calculatorResults.netProfit) >= 0 ? 'text-emerald-400' : 'text-rose-500'
-                              }`}>
-                                {parseFloat(calculatorResults.netProfit) >= 0 ? '+' : ''}
-                                {parseFloat(calculatorResults.netProfit).toLocaleString()}
-                                <span className="text-sm font-medium ml-1">
-                                  {calcMarket === 'HK' ? 'HKD' : calcMarket === 'A' ? 'CNY' : 'USD'}
-                                </span>
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="bg-slate-950/80 px-4 py-2.5 rounded-xl border border-slate-800 text-right w-full md:w-auto">
-                            <span className="text-[10px] text-slate-500 block font-semibold">预计资金投资回报 (ROI)</span>
-                            <span className={`text-base font-bold font-mono ${
-                              parseFloat(calculatorResults.roi) >= 0 ? 'text-emerald-400' : 'text-rose-500'
-                            }`}>
-                              {parseFloat(calculatorResults.roi) >= 0 ? '+' : ''}{calculatorResults.roi}%
-                            </span>
-                          </div>
-                        </div>
-
-                      </div>
-
-                    </div>
-                  </div>
-                )}
-
-                {/* ==================== TAB 3: SMART DECISION SCORER ==================== */}
-                {activeTab === 'scorer' && (
-                  <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 animate-fadeIn">
-                    <div className="border-b border-slate-900 pb-4 mb-6">
-                      <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                        🎯 智能打新决策多因子量化评分系统
-                      </h2>
-                      <p className="text-xs text-slate-400 mt-1">依托保荐人战绩、基石阵营、估值边际、市场情绪及风口题材 5 大因子自动执行深度判定与评级</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                      
-                      {/* Left Column: Metric Dropdown Toggles */}
-                      <div className="lg:col-span-5 flex flex-col gap-5 bg-slate-900/40 p-5 rounded-xl border border-slate-900">
-                        <h3 className="text-xs font-bold text-indigo-400 uppercase tracking-wider">量化因子判定面板</h3>
-                        
-                        {/* 1. Sponsor Selector */}
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex justify-between">
-                            <span>承销及保荐人资质 (Sponsor Reputation)</span>
-                            <span className="text-[10px] text-slate-500">权重 15%</span>
-                          </label>
-                          <select
-                            value={scoreSponsor}
-                            onChange={(e) => setScoreSponsor(e.target.value)}
-                            className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
-                          >
-                            <option value="excellent">头部顶级保荐机构（如中金、高盛、大摩等，历史首日绿鞋护盘率极强）</option>
-                            <option value="average">中型常规券商/投行（首日定价及表现正常，偶有波动）</option>
-                            <option value="poor">中小型弱势承销机构（历史包销记录多次破发，首日托底意愿极差）</option>
-                          </select>
-                        </div>
-
-                        {/* 2. Cornerstone Selector */}
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex justify-between">
-                            <span>基石投资者阵营 (Cornerstone Investors)</span>
-                            <span className="text-[10px] text-slate-500">权重 15%</span>
-                          </label>
-                          <select
-                            value={scoreCornerstone}
-                            onChange={(e) => setScoreCornerstone(e.target.value)}
-                            className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
-                          >
-                            <option value="strong">顶级资本大厂联合基石且占比超 40%（设6个月强制锁仓仓位，极大释缓流通盘抛压）</option>
-                            <option value="medium">有一般基石投资者但占比及名气中等（占比 15% - 40% 之间）</option>
-                            <option value="none">没有任何机构基石认购（散户盘面较重，极易引起无序抛售破发）</option>
-                          </select>
-                        </div>
-
-                        {/* 3. Valuation Selector */}
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex justify-between">
-                            <span>估值安全边际 (PE / PS Edge)</span>
-                            <span className="text-[10px] text-slate-500">权重 15%</span>
-                          </label>
-                          <select
-                            value={scoreValuation}
-                            onChange={(e) => setScoreValuation(e.target.value)}
-                            className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
-                          >
-                            <option value="discount">明显折价（发行定价或市盈率显著低于同板块对标二级竞品）</option>
-                            <option value="fair">定价合理（估值与行业平均线基本持平，溢价温和）</option>
-                            <option value="premium">虚高估值（发行价过于自信，严重高估，对二级市场极为不友好）</option>
-                          </select>
-                        </div>
-
-                        {/* 4. Market Sentiment Selector */}
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex justify-between">
-                            <span>市场认购情绪 (Oversubscription level)</span>
-                            <span className="text-[10px] text-slate-500">权重 20%</span>
-                          </label>
-                          <select
-                            value={scoreSentiment}
-                            onChange={(e) => setScoreSentiment(e.target.value)}
-                            className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
-                          >
-                            <option value="hot">爆红超购（超额认购在 50 倍以上，散户情绪高涨，启动最大上限回拨机制）</option>
-                            <option value="normal">认购情绪温和（超额认购在 15 至 50 倍之间，盘面理性）</option>
-                            <option value="cold">冰冷认购（超购极低甚至不足额，可能存在保荐商和庄家自拉自唱行为）</option>
-                          </select>
-                        </div>
-
-                        {/* 5. Industry Sector Selector */}
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex justify-between">
-                            <span>风口题材与行业赛道 (Industry Sentiment)</span>
-                            <span className="text-[10px] text-slate-500">权重 15%</span>
-                          </label>
-                          <select
-                            value={scoreIndustry}
-                            onChange={(e) => setScoreIndustry(e.target.value)}
-                            className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
-                          >
-                            <option value="hotSector">热门风口（高端AI算力、前沿存储芯片、半导体核心、明星生命科技、高成长消费）</option>
-                            <option value="traditional">传统周期型（传统制造业、夕阳基建、地产周期性重资产、缺乏想象力赛道）</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      {/* Right Column: Dynamic Quantitative Rating Report Panel */}
-                      <div className="lg:col-span-7 bg-slate-900 rounded-xl border border-slate-800 p-6 flex flex-col justify-between">
-                        
-                        {/* Score Header */}
-                        <div className="flex flex-col md:flex-row justify-between items-center gap-6 border-b border-slate-800 pb-6">
-                          
-                          {/* Dynamic Circular Grade Graphic */}
-                          <div className="flex items-center gap-4">
-                            <div className="relative w-24 h-24 flex items-center justify-center">
-                              <svg className="w-full h-full transform -rotate-90">
-                                <circle cx="48" cy="48" r="40" stroke="#1e293b" strokeWidth="8" fill="transparent" />
-                                <circle
-                                  cx="48"
-                                  cy="48"
-                                  r="40"
-                                  stroke="#6366f1"
-                                  strokeWidth="8"
-                                  fill="transparent"
-                                  strokeDasharray={251.2}
-                                  strokeDashoffset={251.2 - (251.2 * decisionReport.score) / 100}
-                                  strokeLinecap="round"
-                                  className="transition-all duration-1000 ease-out"
-                                />
-                              </svg>
-                              <div className="absolute flex flex-col items-center">
-                                <span className="text-3xl font-black text-white font-mono">{decisionReport.score}</span>
-                                <span className="text-[9px] uppercase tracking-wider text-slate-400">分</span>
-                              </div>
-                            </div>
-
-                            <div>
-                              <span className={`inline-block px-3 py-1 rounded-lg text-lg font-black border uppercase ${decisionReport.color}`}>
-                                {decisionReport.grade} 级评估结论
-                              </span>
-                              <p className="text-xs text-slate-400 mt-1.5 font-medium">智能定量评定包含：S级、A级、B级、C级</p>
-                            </div>
-                          </div>
-
-                          <div className="text-center md:text-right">
-                            <span className="text-xs text-slate-500 block">系统综合申购建议：</span>
-                            <span className="text-base font-bold text-indigo-400 mt-1 block">{decisionReport.recommendText}</span>
-                          </div>
-
-                        </div>
-
-                        {/* Score Explanations Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                          
-                          {/* Advantages Box */}
-                          <div className="bg-emerald-950/10 border border-emerald-900/20 p-4 rounded-xl">
-                            <div className="flex items-center gap-2 mb-2 text-emerald-400">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                              <span className="text-xs font-bold uppercase tracking-wider">投研优势因子 (亮点支撑)</span>
-                            </div>
-                            {decisionReport.suggestions.length > 0 ? (
-                              <ul className="space-y-2">
-                                {decisionReport.suggestions.map((s, idx) => (
-                                  <li key={idx} className="text-xs text-emerald-300 leading-normal flex items-start gap-1">
-                                    <span className="text-emerald-500 mt-0.5">•</span>
-                                    <span>{s}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            ) : (
-                              <p className="text-xs text-slate-500 italic">个股暂无捕捉到较为明显的投研加分指标。</p>
-                            )}
-                          </div>
-
-                          {/* Risks Box */}
-                          <div className="bg-rose-950/10 border border-rose-900/20 p-4 rounded-xl">
-                            <div className="flex items-center gap-2 mb-2 text-rose-400">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                              </svg>
-                              <span className="text-xs font-bold uppercase tracking-wider">避坑风险预警 (劣势扣分)</span>
-                            </div>
-                            {decisionReport.risks.length > 0 ? (
-                              <ul className="space-y-2">
-                                {decisionReport.risks.map((r, idx) => (
-                                  <li key={idx} className="text-xs text-rose-300 leading-normal flex items-start gap-1">
-                                    <span className="text-rose-500 mt-0.5">•</span>
-                                    <span>{r}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            ) : (
-                              <p className="text-xs text-slate-500 italic">暂未检测出破发隐患或爆冷风险的投研因子。</p>
-                            )}
-                          </div>
-
-                        </div>
-
-                        {/* General Conclusion Disclaimer */}
-                        <div className="mt-6 pt-4 border-t border-slate-800">
-                          <p className="text-[10px] text-slate-500 leading-normal">
-                            * 多因子量化决策评分系统依托历代新股大数据权重进行分析，不保证未来百分之百盈利或破发概率。股市有风险，入市须极度谨慎。
-                          </p>
-                        </div>
-
-                      </div>
-
-                    </div>
-                  </div>
-                )}
-
-                {/* ==================== TAB 4: STRATEGY GUIDE CENTER ==================== */}
-                {activeTab === 'guide' && (
-                  <div className="flex flex-col gap-6 animate-fadeIn">
-                    
-                    {/* Introductory Hero Banner */}
-                    <div className="bg-gradient-to-r from-indigo-900 to-slate-900 p-8 rounded-2xl border border-slate-800 shadow-xl">
-                      <h2 className="text-2xl font-black text-white">📚 全市场 IPO 申购核心策略与高阶套利百科</h2>
-                      <p className="text-sm text-slate-300 mt-2 max-w-2xl leading-relaxed">
-                        打新并非盲目的抽签运气游戏，而是一门胜率、赔率均可量化的资金无风险/低风险套利。深入掌握港股红鞋机制、回拨临界点和暗盘提前锁定，最大化资金收益率。
-                      </p>
-                    </div>
-
-                    {/* Strategy Grid Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {STRATEGY_GUIDES.map((guide, idx) => (
-                        <div key={idx} className="bg-slate-950 p-6 rounded-2xl border border-slate-800 flex flex-col gap-3 hover:border-slate-700 transition-all">
-                          <span className="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded font-extrabold w-max">
-                            {guide.category}
-                          </span>
-                          <h3 className="text-base font-bold text-white mt-1">{guide.title}</h3>
-                          <p className="text-xs text-slate-400 leading-relaxed mt-2 flex-1">
-                            {guide.content}
-                          </p>
-                          <div className="pt-4 border-t border-slate-900/80">
-                            <button
-                              onClick={() => {
-                                if (guide.category === '港股规则') {
-                                  setCalcMarket('HK');
-                                  setCalcLeverage(10);
-                                } else if (guide.category === 'A股规则') {
-                                  setCalcMarket('A');
-                                } else {
-                                  setCalcMarket('US');
-                                }
-                                setActiveTab('calculator');
-                                showToast(`已成功为您配置 ${guide.category} 的模拟计算参数预设`);
-                              }}
-                              className="text-xs text-indigo-400 hover:text-indigo-300 font-bold flex items-center gap-1"
-                            >
-                              根据本策略配置模拟器 →
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* High-Level Advanced Q&A / Glossary */}
-                    <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800">
-                      <h3 className="text-sm font-extrabold text-white mb-4 uppercase tracking-wider">申购高级核心机制词典</h3>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                          <h4 className="text-xs font-bold text-indigo-400 mb-1">Q: 什么是“回拨机制 (Clawback)”?</h4>
-                          <p className="text-xs text-slate-400 leading-relaxed">
-                            在港股上市中，最初分配给公开发售（散户）和国际配售（机构）的份额占比一般为 10% 和 90%。当散户认购极为火爆时，承销商会根据超额认购倍数，把国际配售中持有的部分份额强制“拨给”散户。例如：超购 15-50倍回拨至 30%；50-100倍回拨至 40%；超购 100倍以上则回拨至 50%。
-                          </p>
-                        </div>
-
-                        <div>
-                          <h4 className="text-xs font-bold text-indigo-400 mb-1">Q: 什么是“绿鞋机制 / 超额配售选择权 (Green Shoe Option)”?</h4>
-                          <p className="text-xs text-slate-400 leading-relaxed">
-                            绿鞋机制指发行人授予主承销商的一项选择权。在上市后30天内，如果股价破发跌落发行价以下，主承销商有权使用此前多募集的资金，在二级市场上买回股票以托底护盘、稳定股价。若上市后股价高涨，承销商则不再回购。这相当于承销商手里有护盘的“子弹”。
-                          </p>
-                        </div>
+                      <div className="border-t border-slate-800 pt-6 mt-6 flex justify-between items-center">
+                        <div><span className="text-xs text-slate-500 block">测算最终净利润</span><span className={`text-2xl font-black font-mono ${Number(calculatorResults.netProfit) >= 0 ? 'text-emerald-400' : 'text-rose-500'}`}>{Number(calculatorResults.netProfit) >= 0 ? '+' : ''}{calculatorResults.netProfit}</span></div>
+                        <div className="bg-slate-950 px-3 py-1.5 rounded border border-slate-800 text-right"><span className="text-[10px] text-slate-500 block">预计回报率 ROI</span><span className="text-emerald-400 font-bold font-mono">{calculatorResults.roi}%</span></div>
                       </div>
                     </div>
-
                   </div>
                 )}
 
               </main>
 
-              {/* Footer Branding */}
-              <footer className="bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-slate-500 mt-auto">
-                <p className="max-w-md mx-auto px-4 leading-normal">
-                  © 2026 IPO 打新投研助手 · 智能云同步与机构配置优化器. All rights reserved. <br />
-                  数据分析基于虚拟模拟算法与实时搜索引擎，投资港股、美股、A股新股有波动破发风险，参与前请充分查阅招股说明书。
-                </p>
+              <footer className="bg-slate-950 border-t border-slate-900 py-4 text-center text-[10px] text-slate-500 mt-auto">
+                 © 2026 IPO 实时打新投研助手 · 真实大盘行情联动版 · 投资有破发风险，参与须极度谨慎。
               </footer>
             </div>
           );
         }
 
-        // 渲染页面
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
