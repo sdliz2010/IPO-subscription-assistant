@@ -3,411 +3,245 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPO 打新助手</title>
-    <!-- 1. 引入 React 核心库 -->
+    <title>IPO 简研</title>
+    <!-- 引入 React 核心库 -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- 2. 引入 Babel（解析 JSX 语法） -->
+    <!-- 引入 Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- 3. 引入 Tailwind CSS（网页样式） -->
+    <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 引入高级无衬线字体，增强冷淡风质感 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
 </head>
-<body class="bg-gray-50">
-    <!-- 网页挂载容器 -->
+<body class="bg-[#fafafa] text-[#1a1a1a]">
+    <!-- 网页挂载根节点 -->
     <div id="root"></div>
 
     <script type="text/babel">
-        // 声明常用的 React Hook
-        const { useState, useMemo, useEffect } = React;
+        const { useState, useMemo } = React;
 
-        // 大盘基础数据模板
-        const INITIAL_IPO_DATA = [
+        // 精简、干净的内置投研数据（后续直接在这里手动修改即可）
+        const IPO_DATA = [
           {
-            id: 'a-1',
-            name: '长鑫科技 (ChangXin DRAM)',
+            id: '1',
+            name: '长鑫科技',
             ticker: '688825.SH',
-            market: 'A',
-            industry: '半导体 / 存储芯片',
-            priceRange: '8.66 CNY',
-            minEntry: '4,330 CNY (500股/配号)',
-            status: 'subscription', 
-            endDate: '2026-07-23',
-            listDate: '2026-07-31',
-            oversubscribed: 852.4,
-            cornerstones: '大基金三期, 合肥国资 (占比 45.0%)',
-            sponsor: '中信证券, 中金公司',
-            sponsorSuccessRate: 95, 
+            market: 'A股科创板',
+            industry: '半导体存储',
+            price: '8.66 CNY',
+            entry: '4,330 CNY',
+            status: 'subscription', // subscription=招股中, upcoming=待招股, listed=已上市
+            oversub: '852.4',
             rating: 'S',
-            valuationPE: 28.4,
-            freezeDays: 8,
-            summary: '科创板史上最大IPO！国内DRAM存储芯片绝对龙头，拟募资数百亿元，获大基金三期大力注资。'
+            summary: '国内 DRAM 存储芯片绝对龙头。发行定价极为克制，大基金三期重仓注资，具备极高的安全边际与中签溢价空间。'
           },
           {
-            id: 'a-2',
-            name: '托伦斯精密 (Toron Semi)',
+            id: '2',
+            name: '托伦斯精密',
             ticker: '301583.SZ',
-            market: 'A',
-            industry: '半导体零部件 / 精密制造',
-            priceRange: '18.20 CNY',
-            minEntry: '9,100 CNY (500股/配号)',
+            market: 'A股创业板',
+            industry: '半导体零部件',
+            price: '18.20 CNY',
+            entry: '9,100 CNY',
             status: 'listed',
-            endDate: '2026-07-06',
-            listDate: '2026-07-10',
-            oversubscribed: 1450.0,
-            cornerstones: '无公开基石 (A股常规发行)',
-            sponsor: '华泰联合证券',
-            sponsorSuccessRate: 91,
+            oversub: '1450.0',
             rating: 'S',
-            valuationPE: 21.5,
-            freezeDays: 4,
-            firstDayPerformance: 450.0,
-            summary: '近期半导体精密零部件明星新股。上市首日爆发式飙升盘中涨幅超10倍。'
+            summary: '半导体精密制造明星新股。上市表现极为亮眼，单签浮盈丰厚，显著激活了科技板块的打新情绪。'
           },
           {
-            id: 'hk-1',
-            name: 'Momenta 自动驾驶 (Momenta-W)',
+            id: '3',
+            name: 'Momenta',
             ticker: '06880.HK',
-            market: 'HK',
-            industry: '自动驾驶 / AI算法',
-            priceRange: '295.60 HKD',
-            minEntry: '5,912 HKD (20股/手)',
+            market: '港股配售',
+            industry: '自动驾驶 AI',
+            price: '295.60 HKD',
+            entry: '5,912 HKD',
             status: 'subscription',
-            endDate: '2026-07-25',
-            listDate: '2026-07-31',
-            oversubscribed: 42.8,
-            cornerstones: '上汽集团, 奔驰, 腾讯控股 (占比 52.3%)',
-            sponsor: '中金公司, 高盛, 瑞银',
-            sponsorSuccessRate: 85,
+            oversub: '42.8',
             rating: 'A',
-            valuationPE: 42.5,
-            freezeDays: 6,
-            summary: '中国头部自动驾驶独角兽。获汽车产业巨头及科技巨头深度联手基石认购。'
+            summary: '头部自动驾驶独角兽。上汽、奔驰与腾讯深度联合基石认购（超52%），红鞋机制下建议多账户现金一首打法。'
           },
           {
-            id: 'hk-2',
-            name: '晶合集成 (Nexchip HK)',
+            id: '4',
+            name: '晶合集成',
             ticker: '02249.HK',
-            market: 'HK',
-            industry: '晶圆代工 / 半导体',
-            priceRange: '32.30 HKD',
-            minEntry: '6,460 HKD (200股/手)',
+            market: '港股配售',
+            industry: '晶圆代工',
+            price: '32.30 HKD',
+            entry: '6,460 HKD',
             status: 'listed',
-            endDate: '2026-07-05',
-            listDate: '2026-07-10',
-            oversubscribed: 15.6,
-            cornerstones: '合肥建投, 集创北方 (占比 38.0%)',
-            sponsor: '国泰君安国际',
-            sponsorSuccessRate: 72,
+            oversub: '15.6',
             rating: 'B',
-            valuationPE: 18.2,
-            freezeDays: 5,
-            firstDayPerformance: 0.0,
-            summary: '已上市。半导体成熟制程晶圆代工。由于行业估值基本合理，溢价受限。'
+            summary: '成熟制程晶圆代工企业。行业估值基本合理，缺乏爆款故事，首日走势平稳，适合防御性观察。'
           }
         ];
 
         function App() {
-          const [activeTab, setActiveTab] = useState('dashboard'); 
-          const [marketFilter, setMarketFilter] = useState('ALL'); 
-          const [searchTerm, setSearchTerm] = useState('');
-          const [ipoData, setIpoData] = useState(INITIAL_IPO_DATA);
-          const [selectedIpo, setSelectedIpo] = useState(INITIAL_IPO_DATA[0]);
-          const [toastMessage, setToastMessage] = useState(null);
+          const [marketFilter, setMarketFilter] = useState('ALL');
+          const [selectedIpo, setSelectedIpo] = useState(IPO_DATA[0]);
 
-          // 行情同步状态
-          const [isSyncing, setIsSyncing] = useState(false);
-          const [syncLogs, setSyncLogs] = useState([]);
+          // 简易快捷收益估算状态
+          const [calcGain, setCalcFirstDayGain] = useState(25);
 
-          // 计算模拟器状态
-          const [calcMarket, setCalcMarket] = useState('HK'); 
-          const [calcPrincipal, setCalcPrincipal] = useState(50000); 
-          const [calcLeverage, setCalcLeverage] = useState(10); 
-          const [calcSubFee, setCalcSubFee] = useState(100); 
-          const [calcInterestRate, setCalcInterestRate] = useState(3.8); 
-          const [calcInterestDays, setCalcInterestDays] = useState(6); 
-          const [calcFirstDayGain, setCalcFirstDayGain] = useState(25); 
-          const [calcAllotmentRate, setCalcAllotmentRate] = useState(20); 
-          const [calcLotsApplied, setCalcLotsApplied] = useState(10); 
-          const [calcPricePerLot, setCalcPricePerLot] = useState(4000); 
-
-          const showToast = (msg) => {
-            setToastMessage(msg);
-            setTimeout(() => setToastMessage(null), 3500);
-          };
-
-          // 📡 核心修正：利用动态脚本载入（JSONP技术）专线直连腾讯行情，彻底丢弃第三方中转
-          const fetchRealTimePrices = () => {
-            setIsSyncing(true);
-            setSyncLogs([
-              "🔄 正在初始化【专线直连】高频金融网关...",
-              "🔍 清理旧有管道，正在为个股建立原生内存映射...",
-              "🌐 正在向腾讯财经官方服务器申请专属行情通道..."
-            ]);
-
-            // 1. 移除可能已经存在的旧脚本，防止污染页面
-            const oldScript = document.getElementById('tencent-hq-script');
-            if (oldScript) oldScript.remove();
-
-            // 2. 动态创建 script 标签
-            const script = document.createElement('script');
-            script.id = 'tencent-hq-script';
-            // 拼接请求代码（附带随机数防止缓存）
-            script.src = `https://qt.gtimg.cn/q=s_sh688825,s_sz301583,s_hk06880,s_hk02249&r=${Math.random()}`;
-
-            // 3. 管道建立成功后的回调处理
-            script.onload = () => {
-              setSyncLogs(prev => [...prev, "📥 成功接收到交易所原装数据报文！正在刷入数据中心..."]);
-
-              // 映射表：我们定义的股票代码 ➡️ 腾讯生成的全局变量名
-              const codeMap = {
-                '688825.SH': 'v_s_s_sh688825',
-                '301583.SZ': 'v_s_s_sz301583',
-                '06880.HK': 'v_s_s_hk06880',
-                '02249.HK': 'v_s_s_hk02249'
-              };
-
-              setIpoData(prev => prev.map(ipo => {
-                const globalVarName = codeMap[ipo.ticker];
-                // 直接从窗口全局对象 window 里拿取刚刚执行完的腾讯股票变量
-                if (globalVarName && window[globalVarName]) {
-                  const dataParts = window[globalVarName].split('~');
-                  const currentPrice = dataParts[3]; // 最新价
-                  const changePercent = dataParts[5]; // 今日涨跌幅 (%)
-                  return {
-                    ...ipo,
-                    priceRange: `${currentPrice} ${ipo.market === 'HK' ? 'HKD' : 'CNY'} (最新价)`,
-                    firstDayPerformance: ipo.status === 'listed' ? parseFloat(changePercent) : ipo.firstDayPerformance
-                  };
-                }
-                return ipo;
-              }));
-
-              setSyncLogs(prev => [
-                ...prev, 
-                "✅ 腾讯交易所专线连接成功！",
-                "🎉 网页大盘实时现价、今日涨跌已同步重绘完成。"
-              ]);
-              showToast("⚡ 真实行情数据秒级同步成功！");
-              setIsSyncing(false);
-            };
-
-            // 4. 容错处理
-            script.onerror = () => {
-              setSyncLogs(prev => [...prev, "❌ 专线握手超时。系统已自动启动高仿真本地数据保护盾。"]);
-              showToast("同步遇到波折，已切换至本地数据");
-              setIsSyncing(false);
-            };
-
-            // 5. 将温室挂载到网页中，立刻执行拉取
-            document.body.appendChild(script);
-          };
-
-          // 进入网页时自动拉取一次，实现“开门见真行情”
-          useEffect(() => {
-            fetchRealTimePrices();
-          }, []);
-
-          const filteredIpoData = useMemo(() => {
-            return ipoData.filter((ipo) => {
-              const matchMarket = marketFilter === 'ALL' || ipo.market === marketFilter;
-              const matchSearch = ipo.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                                  ipo.ticker.toLowerCase().includes(searchTerm.toLowerCase());
-              return matchMarket && matchSearch;
+          // 过滤逻辑
+          const filteredData = useMemo(() => {
+            return IPO_DATA.filter(item => {
+              if (marketFilter === 'ALL') return true;
+              if (marketFilter === 'A') return item.market.includes('A股');
+              if (marketFilter === 'HK') return item.market.includes('港股');
+              return true;
             });
-          }, [ipoData, marketFilter, searchTerm]);
+          }, [marketFilter]);
 
-          const calculatorResults = useMemo(() => {
-            const totalFinancing = calcPrincipal * calcLeverage;
-            const actualLots = Math.min(calcLotsApplied, Math.floor(totalFinancing / calcPricePerLot));
-            const actualSubValue = actualLots * calcPricePerLot;
-            const borrowedAmount = Math.max(0, actualSubValue - calcPrincipal);
-            const interestCost = (borrowedAmount * (calcInterestRate / 100) * calcInterestDays) / 365;
-            const nonRefundableCost = (calcMarket === 'HK' ? calcSubFee : 0) + interestCost;
-            const valueWon = (actualLots * (calcAllotmentRate / 100)) * calcPricePerLot;
-            const netProfit = (valueWon * (calcFirstDayGain / 100)) - nonRefundableCost;
-            return {
-              actualLots, actualSubValue, borrowedAmount,
-              interestCost: interestCost.toFixed(2),
-              nonRefundableCost: nonRefundableCost.toFixed(2),
-              valueWon: valueWon.toFixed(0),
-              netProfit: netProfit.toFixed(2),
-              roi: calcPrincipal > 0 ? ((netProfit / calcPrincipal) * 100).toFixed(2) : '0.00',
-              breakEvenGain: valueWon > 0 ? ((nonRefundableCost / valueWon) * 100).toFixed(2) : '0.00'
-            };
-          }, [calcMarket, calcPrincipal, calcLeverage, calcSubFee, calcInterestRate, calcInterestDays, calcFirstDayGain, calcAllotmentRate, calcLotsApplied, calcPricePerLot]);
+          // 计算一手中签期望纯收益
+          const expectedProfit = useMemo(() => {
+            if (!selectedIpo) return 0;
+            const entryValue = parseFloat(selectedIpo.entry.replace(/[^0-9.]/g, '')) || 0;
+            return ((entryValue * (calcGain / 100))).toFixed(0);
+          }, [selectedIpo, calcGain]);
 
           return (
-            <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans">
-              {toastMessage && <div className="fixed top-5 right-5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-5 py-3 rounded-xl shadow-2xl z-50 font-bold border border-emerald-400/20">{toastMessage}</div>}
-
-              {/* 导航面板 */}
-              <header className="bg-slate-950/80 backdrop-blur border-b border-slate-800 sticky top-0 z-40">
-                <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-indigo-600 text-white p-2.5 rounded-xl font-bold text-lg shadow-lg shadow-indigo-600/20">🚀</div>
-                    <div>
-                      <h1 className="text-xl font-bold text-white tracking-tight">IPO 打新数据同步助手</h1>
-                      <p className="text-xs text-slate-400 mt-0.5">腾讯官方极速行情专线 · 零门槛无跨域干扰版</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
-                    <button onClick={() => setActiveTab('dashboard')} className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${activeTab === 'dashboard' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}>📊 市场看板</button>
-                    <button onClick={() => setActiveTab('calculator')} className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${activeTab === 'calculator' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}>🧮 杠杆精算模拟</button>
-                  </div>
+            <div className="max-w-5xl mx-auto px-6 py-12 md:py-20 flex flex-col min-h-screen">
+              
+              {/* HEADER：极简无修饰页头 */}
+              <header className="mb-12 border-b border-gray-100 pb-8 flex justify-between items-baseline">
+                <div>
+                  <h1 className="text-xl font-medium tracking-tight text-gray-900">IPO STUDIO</h1>
+                  <p className="text-xs text-gray-400 mt-1 font-light tracking-wide">新股申购清爽度投研面板</p>
+                </div>
+                
+                {/* 市场切换：冷淡风小按钮 */}
+                <div className="flex gap-4 text-xs font-light tracking-wide text-gray-400">
+                  <button onClick={() => setMarketFilter('ALL')} className={`transition-colors ${marketFilter === 'ALL' ? 'text-gray-900 font-normal underline underline-offset-4' : 'hover:text-gray-600'}`}>全部</button>
+                  <button onClick={() => setMarketFilter('A')} className={`transition-colors ${marketFilter === 'A' ? 'text-gray-900 font-normal underline underline-offset-4' : 'hover:text-gray-600'}`}>A股打新</button>
+                  <button onClick={() => setMarketFilter('HK')} className={`transition-colors ${marketFilter === 'HK' ? 'text-gray-900 font-normal underline underline-offset-4' : 'hover:text-gray-600'}`}>港股配售</button>
                 </div>
               </header>
 
-              {/* 控制台日志 */}
-              <div className="bg-slate-950 border-b border-slate-800/60">
-                <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center">
-                  <div className="flex-1 bg-slate-900/50 rounded-xl p-3 border border-slate-800 font-mono text-[11px] text-teal-400 max-h-[70px] overflow-y-auto space-y-1">
-                    {syncLogs.map((log, idx) => <div key={idx}>&gt; {log}</div>)}
-                  </div>
-                  <button 
-                    onClick={fetchRealTimePrices} 
-                    disabled={isSyncing}
-                    className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-5 py-3 rounded-xl shadow-md shrink-0 flex items-center justify-center gap-1.5 disabled:opacity-50 transition-colors"
-                  >
-                    {isSyncing ? "正在高频通讯..." : "⚡ 一键拉取最新大盘行情"}
-                  </button>
-                </div>
-              </div>
-
-              {/* 核心大盘 */}
-              <main className="flex-1 max-w-7xl w-full mx-auto p-4 flex flex-col gap-6">
+              {/* MAIN CONTENT：双栏错落布局 */}
+              <main className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
                 
-                {activeTab === 'dashboard' && (
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeIn">
-                    
-                    {/* 左侧卡片列表 */}
-                    <div className="lg:col-span-2 flex flex-col gap-4">
-                      <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row gap-4 items-center justify-between">
-                        <div className="flex gap-2">
-                          {['ALL', 'HK', 'A'].map(m => (
-                            <button key={m} onClick={() => setMarketFilter(m)} className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${marketFilter === m ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-900 text-slate-400 border-slate-800'}`}>
-                              {m === 'ALL' ? '全部市场' : m === 'HK' ? '🇭🇰 港股配售' : '🇨🇳 A股打新'}
-                            </button>
-                          ))}
-                        </div>
-                        <input type="text" placeholder="快速搜索个股名称或代码..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-200 px-3 py-1.5 focus:outline-none focus:border-indigo-500 w-full sm:w-60" />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {filteredIpoData.map(ipo => (
-                          <div key={ipo.id} onClick={() => setSelectedIpo(ipo)} className={`bg-slate-950 p-5 rounded-2xl border transition-all cursor-pointer hover:border-slate-700 ${selectedIpo.id === ipo.id ? 'border-indigo-500 ring-1 ring-indigo-500/20' : 'border-slate-800'}`}>
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${ipo.market === 'HK' ? 'bg-red-500/10 text-red-400' : 'bg-blue-500/10 text-blue-400'}`}>{ipo.market === 'HK' ? '港股配售' : 'A股科创板'}</span>
-                                <h3 className="text-base font-bold text-white mt-2">{ipo.name}</h3>
-                                <p className="text-xs text-indigo-400 font-mono mt-0.5">{ipo.ticker}</p>
-                              </div>
-                              <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 text-white flex items-center justify-center font-black text-xs shadow-md">{ipo.rating}级</span>
-                            </div>
-                            <div className="mt-4 pt-4 border-t border-slate-900/80 grid grid-cols-2 gap-3 text-xs">
-                              <div><p className="text-slate-500">最新盘面状态</p><p className="font-semibold text-slate-200 mt-0.5">{ipo.priceRange}</p></div>
-                              <div><p className="text-slate-500">超额认购水平</p><p className="font-bold text-amber-400 mt-0.5">{ipo.oversubscribed} 倍</p></div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 右侧：个股深度诊断 + 📺 TradingView 免费行情走势图 */}
-                    <div className="lg:col-span-1">
-                      {selectedIpo && (
-                        <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 flex flex-col gap-5 sticky top-24 shadow-xl">
+                {/* 左栏：个股精简名录 (占 5 栏) */}
+                <div className="md:col-span-5 space-y-3">
+                  {filteredData.map(ipo => {
+                    const isSelected = selectedIpo.id === ipo.id;
+                    return (
+                      <div 
+                        key={ipo.id}
+                        onClick={() => setSelectedIpo(ipo)}
+                        className={`p-4 rounded-lg transition-all duration-200 cursor-pointer border ${
+                          isSelected 
+                            ? 'bg-white border-gray-200 shadow-[0_4px_12px_rgba(0,0,0,0.02)]' 
+                            : 'border-transparent hover:bg-gray-100/60'
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
                           <div>
-                            <h2 className="text-lg font-bold text-white tracking-tight">{selectedIpo.name}</h2>
-                            <p className="text-xs text-indigo-400 font-mono mt-0.5">{selectedIpo.ticker} 数据终端</p>
-                          </div>
-
-                          {/* 📺 走势图模块 */}
-                          <div className="bg-slate-900 rounded-xl p-3 border border-slate-800">
-                            <span className="text-[11px] font-bold text-slate-400 block mb-2">📊 真实市场K线及技术面图表 (由 TradingView 驱动)</span>
-                            <iframe 
-                              src={`https://s.tradingview.com/widgetembed/?frameElementId=tradingview_chart&symbol=${
-                                selectedIpo.ticker.endsWith('.SH') ? 'SSE:' + selectedIpo.ticker.replace('.SH','') :
-                                selectedIpo.ticker.endsWith('.SZ') ? 'SZSE:' + selectedIpo.ticker.replace('.SZ','') :
-                                'HKEX:' + parseInt(selectedIpo.ticker.replace('.HK',''))
-                              }&interval=D&hidesidetoolbar=1&symboledit=0&saveimage=0&toolbarbg=f1f3f6&theme=dark&style=1&timezone=Asia%2FShanghai&locale=zh_CN`}
-                              width="100%" 
-                              height="200" 
-                              frameBorder="0" 
-                              allowTransparency="true" 
-                              scrolling="no" 
-                              allowFullScreen
-                              className="rounded-lg"
-                            ></iframe>
-                          </div>
-
-                          <div className="space-y-2 text-xs">
-                            <div className="bg-slate-900/60 p-2.5 rounded border border-slate-900 flex justify-between">
-                              <span className="text-slate-400">🤝 联席保荐人</span>
-                              <span className="font-bold text-slate-200 truncate max-w-[150px]">{selectedIpo.sponsor}</span>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-sm font-medium text-gray-900">{ipo.name}</h3>
+                              {/* 状态点指示器 */}
+                              <span className={`w-1.5 h-1.5 rounded-full ${ipo.status === 'subscription' ? 'bg-emerald-400' : 'bg-gray-300'}`} />
                             </div>
-                            <div className="bg-slate-900/60 p-2.5 rounded border border-slate-900 flex justify-between">
-                              <span className="text-slate-400">💎 基石阵营</span>
-                              <span className="font-bold text-slate-200 truncate max-w-[150px]">{selectedIpo.cornerstones}</span>
-                            </div>
-                            <div className="bg-slate-900/60 p-2.5 rounded border border-slate-900 flex justify-between">
-                              <span className="text-slate-400">今日行情涨跌幅</span>
-                              <span className={`font-bold font-mono ${selectedIpo.firstDayPerformance > 0 ? 'text-emerald-400' : selectedIpo.firstDayPerformance < 0 ? 'text-rose-500' : 'text-slate-400'}`}>
-                                {selectedIpo.firstDayPerformance > 0 ? '+' : ''}{selectedIpo.firstDayPerformance}%
-                              </span>
-                            </div>
+                            <p className="text-[11px] font-mono text-gray-400 mt-0.5 tracking-wide">{ipo.ticker} · {ipo.industry}</p>
                           </div>
-
-                          <div className="bg-indigo-950/20 border border-indigo-900/30 p-4 rounded-xl text-xs text-slate-300 leading-relaxed">
-                            <span className="font-bold text-indigo-400 block mb-1">💡 机构配置诊断</span>
-                            {selectedIpo.summary}
+                          
+                          <div className="text-right">
+                            <span className="text-xs font-mono text-gray-800 tracking-tight">{ipo.price}</span>
+                            <span className="block text-[9px] font-light text-gray-400 tracking-wider mt-0.5">{ipo.market}</span>
                           </div>
                         </div>
-                      )}
-                    </div>
-
-                  </div>
-                )}
-
-                {/* 盈亏模拟计算卡 */}
-                {activeTab === 'calculator' && (
-                  <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-8 animate-fadeIn">
-                    <div className="flex flex-col gap-4 bg-slate-900/40 p-5 rounded-xl border border-slate-800">
-                      <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-wider">一、调节测算指标</h3>
-                      <div className="space-y-4 text-xs">
-                        <div><label className="block text-slate-400 mb-1.5 font-medium">账户本金金额 ({calcMarket}):</label><input type="number" value={calcPrincipal} onChange={e=>setCalcPrincipal(Number(e.target.value))} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white font-mono" /></div>
-                        <div><label className="block text-slate-400 mb-1.5 font-medium">每手新股面值 / 中签配额面值:</label><input type="number" value={calcPricePerLot} onChange={e=>setCalcPricePerLot(Number(e.target.value))} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white font-mono" /></div>
-                        <div><label className="block text-slate-400 mb-1.5 font-medium">预估中签概率 % (多户/孖展):</label><input type="number" value={calcAllotmentRate} onChange={e=>setCalcAllotmentRate(Number(e.target.value))} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white font-mono" /></div>
-                        <div><label className="block text-slate-400 mb-1.5 font-medium">预期开盘首日涨幅/暗盘溢价 %:</label><input type="number" value={calcFirstDayGain} onChange={e=>setCalcFirstDayGain(Number(e.target.value))} className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white font-mono" /></div>
                       </div>
-                    </div>
-                    
-                    <div className="bg-slate-900 p-6 rounded-xl border border-slate-800 flex flex-col justify-between">
-                      <div>
-                        <h3 className="text-sm font-bold text-white border-b border-slate-800 pb-2 uppercase tracking-wider">二、盈亏高精精算报告</h3>
-                        <div className="space-y-3 text-xs text-slate-400 mt-4">
-                          <div className="flex justify-between"><span>预计加权中签货值:</span><span className="text-slate-200 font-mono font-bold">¥ {calculatorResults.valueWon}</span></div>
-                          <div className="flex justify-between"><span>硬性沉没利息与认购费成本:</span><span className="text-rose-400 font-mono font-bold">¥ {calculatorResults.nonRefundableCost}</span></div>
-                          <div className="flex justify-between"><span>多户打法保本所需平衡涨幅界限:</span><span className="text-amber-400 font-mono font-bold">{calculatorResults.breakEvenGain} %</span></div>
-                        </div>
-                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* 右栏：沉浸式详情与速算 (占 7 栏) */}
+                <div className="md:col-span-7 bg-white border border-gray-100 rounded-xl p-8 shadow-[0_8px_24px_rgba(0,0,0,0.01)] sticky top-12">
+                  {selectedIpo ? (
+                    <div className="space-y-8 animate-fadeIn">
                       
-                      <div className="border-t border-slate-800 pt-6 mt-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                      {/* 标题区 */}
+                      <div className="border-b border-gray-50 pb-5 flex justify-between items-start">
                         <div>
-                          <span className="text-xs text-slate-500 block font-medium">测算最终战略净利润:</span>
-                          <span className={`text-3xl font-black font-mono tracking-tight mt-1 block ${Number(calculatorResults.netProfit) >= 0 ? 'text-emerald-400' : 'text-rose-500'}`}>{Number(calculatorResults.netProfit) >= 0 ? '+' : ''}{calculatorResults.netProfit}</span>
+                          <h2 className="text-lg font-medium text-gray-900">{selectedIpo.name}</h2>
+                          <p className="text-xs text-gray-400 font-mono mt-0.5">{selectedIpo.ticker} / {selectedIpo.market}</p>
                         </div>
-                        <div className="bg-slate-950 px-4 py-2.5 rounded-xl border border-slate-800 text-right w-full sm:w-auto"><span className="text-[10px] text-slate-500 block font-semibold">资金投资回报 ROI</span><span className="text-emerald-400 font-bold font-mono text-base">{calculatorResults.roi} %</span></div>
+                        <div className="text-right">
+                          <span className="text-xs font-light text-gray-400">系统评级</span>
+                          <span className="block text-2xl font-light font-mono text-gray-900 tracking-tighter leading-none mt-1">{selectedIpo.rating}</span>
+                        </div>
                       </div>
+
+                      {/* 数据矩阵 */}
+                      <div className="grid grid-cols-2 gap-y-5 gap-x-4 text-xs font-light">
+                        <div>
+                          <span className="text-gray-400 block">发行定价</span>
+                          <span className="text-gray-900 font-mono mt-1 block text-sm">{selectedIpo.price}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-400 block">一手最低门槛 (入场费)</span>
+                          <span className="text-gray-900 font-mono mt-1 block text-sm">{selectedIpo.entry}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-400 block">当前超额认购</span>
+                          <span className="text-gray-900 font-mono mt-1 block text-sm">{selectedIpo.oversub = 'N/A' ? `${selectedIpo.oversub} 倍` : '暂无数据'}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-400 block">核心赛道</span>
+                          <span className="text-gray-900 mt-1 block text-sm">{selectedIpo.industry}</span>
+                        </div>
+                      </div>
+
+                      {/* 投研摘要 */}
+                      <div className="space-y-2">
+                        <span className="text-xs font-light text-gray-400 block">简研诊断结论</span>
+                        <p className="text-xs text-gray-600 leading-relaxed font-light">{selectedIpo.summary}</p>
+                      </div>
+
+                      {/* 极简速算器：冷淡而实用 */}
+                      <div className="bg-[#fcfcfc] border border-gray-100/70 rounded-lg p-4 space-y-4">
+                        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                          <span className="text-xs font-light text-gray-500">一手估算涨幅偏好 (%)</span>
+                          <div className="flex items-center gap-2">
+                            <input 
+                              type="range" 
+                              min="-20" 
+                              max="150" 
+                              value={calcGain} 
+                              onChange={(e) => setCalcFirstDayGain(Number(e.target.value))}
+                              className="w-28 h-1 bg-gray-200 appearance-none rounded-lg accent-gray-900 cursor-pointer"
+                            />
+                            <span className="text-xs font-mono font-medium text-gray-800 w-10 text-right">{calcGain > 0 ? `+${calcGain}` : calcGain}%</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex justify-between items-baseline pt-2 border-t border-gray-100">
+                          <span className="text-xs font-light text-gray-400">一手持仓预期损益贡献</span>
+                          <span className={`text-xl font-mono tracking-tight font-medium ${Number(expectedProfit) >= 0 ? 'text-gray-900' : 'text-rose-500'}`}>
+                            {Number(expectedProfit) >= 0 ? '+' : ''}{Number(expectedProfit).toLocaleString()} 
+                            <span className="text-xs font-light text-gray-400 ml-1">{selectedIpo.market.includes('港股') ? 'HKD' : 'CNY'}</span>
+                          </span>
+                        </div>
+                      </div>
+
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="text-center py-20 text-xs text-gray-400 font-light italic">请在左侧点选目标个股查看深度简研</div>
+                  )}
+                </div>
 
               </main>
 
-              <footer className="bg-slate-950 border-t border-slate-900/60 py-4 text-center text-[10px] text-slate-500 mt-auto">
-                 © 2026 IPO 实时打新投研助手 · 真实市场数据源联动版 · 投资有风险，入市须极度谨慎。
-                </footer>
+              {/* FOOTER */}
+              <footer className="mt-20 border-t border-gray-50 pt-6 text-center text-[10px] text-gray-300 font-light tracking-wider">
+                  © 2026 IPO STUDIO · LESS IS MORE.
+              </footer>
             </div>
           );
         }
